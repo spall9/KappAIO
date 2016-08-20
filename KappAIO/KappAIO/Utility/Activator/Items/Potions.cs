@@ -41,6 +41,7 @@ namespace KappAIO.Utility.Activator.Items
         {
             try
             {
+                if (Player.Instance.IsDead) return;
                 foreach (var pot in Pots.Where(p => p.ItemReady(PotionsMenu) && PotionsMenu.SliderValue(p.Id + "hp") >= Player.Instance.HealthPercent))
                 {
                     if (!Player.Instance.Buffs.Any(a => PotBuffs.Any(b => a.DisplayName.Equals(b))))

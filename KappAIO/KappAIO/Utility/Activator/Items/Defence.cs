@@ -40,6 +40,8 @@ namespace KappAIO.Utility.Activator.Items
         {
             try
             {
+                if(Player.Instance.IsDead) return;
+
                 if (Randuins.ItemReady(Def) && Def.CompareSlider(Randuins.Id + "hp", Player.Instance.HealthPercent) && Player.Instance.CountEnemiesInRange(Randuins.Range) > 0
                     && Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.Combo))
                 {
