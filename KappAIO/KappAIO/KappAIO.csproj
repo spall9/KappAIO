@@ -70,13 +70,18 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Common\Extentions.cs" />
+    <Compile Include="Utility\Activator\Cleanse\Qss.cs" />
+    <Compile Include="Utility\Activator\Database.cs" />
+    <Compile Include="Utility\Activator\Items\Defence.cs" />
+    <Compile Include="Utility\Activator\Items\Offence.cs" />
+    <Compile Include="Utility\Activator\Items\Potions.cs" />
+    <Compile Include="Utility\Activator\Spells\Summoners.cs" />
+    <Compile Include="Utility\Activator\Load.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Utility\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

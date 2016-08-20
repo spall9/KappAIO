@@ -22,6 +22,7 @@ namespace KappAIO
             var Instance = (Base)Activator.CreateInstance(null, "KappAIO.Champions." + Player.Instance.Hero + "." + Player.Instance.Hero).Unwrap();
             KappaEvade.Init();
             CheckVersion.Init();
+            Utility.Activator.Load.Init();
         }
     }
 }

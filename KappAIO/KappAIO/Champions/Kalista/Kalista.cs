@@ -4,6 +4,7 @@ using System.Linq;
 using EloBuddy;
 using EloBuddy.SDK;
 using EloBuddy.SDK.Enumerations;
+using EloBuddy.SDK.Events;
 using EloBuddy.SDK.Menu;
 using EloBuddy.SDK.Rendering;
 using KappAIO.Common;
@@ -59,6 +60,7 @@ namespace KappAIO.Champions.Kalista
                 });
 
             //AutoMenu.CreateCheckBox("exploit", "Enable Kalista Exploit (WILL BAN YOU)", false);
+            AutoMenu.CreateCheckBox("AutoR", "Auto R");
             AutoMenu.CreateCheckBox("EDeath", "E Before Death");
             AutoMenu.CreateCheckBox("AutoEJungle", "Auto Steal Jungle Camps (E)");
             AutoMenu.CreateCheckBox("AutoEBig", "Auto Use E Big Minions");
@@ -74,12 +76,23 @@ namespace KappAIO.Champions.Kalista
             LaneClearMenu.CreateSlider("Qhits", "Q Hit Count {0}", 3, 1, 15);
             LaneClearMenu.CreateSlider("Ekills", "E Kill Count {0}", 2, 1, 10);
 
+            JungleClearMenu.CreateCheckBox("Esmall", "E Kill Small Mobs");
+
             KillStealMenu.CreateCheckBox("ETransfer", "Stacks Transfer Killsteal (Q > E)");
             DrawMenu.CreateCheckBox("EDMG", "Draw E Damage");
 
             Orbwalker.OnUnkillableMinion += Orbwalker_OnUnkillableMinion;
             Spellbook.OnCastSpell += Spellbook_OnCastSpell;
             Events.OnIncomingDamage += Events_OnIncomingDamage;
+            Gapcloser.OnGapcloser += Gapcloser_OnGapcloser;
+        }
+
+        private static void Gapcloser_OnGapcloser(AIHeroClient sender, Gapcloser.GapcloserEventArgs e)
+        {
+            if(sender == null || !sender.IsEnemy || e.End.Distance(user) > 1000 || !R.IsReady()) return;
+
+            if(user.HealthPercent <= 20 || user.CountEnemiesInRange(1000) > user.CountAlliesInRange(1000))
+                R.Cast();
         }
 
         private static void Events_OnIncomingDamage(Events.InComingDamageEventArgs args)
@@ -210,7 +223,37 @@ namespace KappAIO.Champions.Kalista
 
         public override void JungleClear()
         {
+            if (E.IsReady() && JungleClearMenu.CheckBoxValue(SpellSlot.E) && JungleClearMenu.CompareSlider("Emana", user.ManaPercent))
+            {
+                if (JungleClearMenu.CheckBoxValue("Esmall"))
+                {
+                    foreach (var mob in EntityManager.MinionsAndMonsters.GetJungleMonsters().Where(m => m != null && m.IsKillable(E.Range) && m.EKill()))
+                    {
+                        if (mob != null)
+                            E.Cast();
+                        return;
+                    }
+                }
+                else
+                {
+                    foreach (var mob in SupportedJungleMobs.Where(m => m != null && m.IsKillable(E.Range) && m.EKill()))
+                    {
+                        if (mob != null)
+                            E.Cast();
+                        return;
+                    }
+                }
+            }
 
+            if (Q.IsReady() && JungleClearMenu.CheckBoxValue(SpellSlot.Q) && JungleClearMenu.CompareSlider("Qmana", user.ManaPercent))
+            {
+                foreach (var mob in SupportedJungleMobs.Where(m => m != null && m.IsKillable(Q.Range)))
+                {
+                    if (mob != null)
+                        Q.Cast(mob);
+                    return;
+                }
+            }
         }
 
         public override void KillSteal()

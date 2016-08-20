@@ -11,6 +11,14 @@ namespace KappAIO.Common
     internal static class Extentions
     {
         /// <summary>
+        ///     Returns true if the Item IsReady.
+        /// </summary>
+        public static bool ItemReady(this Item item, Menu menu)
+        {
+            return item != null && item.IsOwned(Player.Instance) && item.IsReady() && menu.CheckBoxValue(item.Id.ToString());
+        }
+
+        /// <summary>
         ///     Returns if no orbwalker modes are active
         /// </summary>
         public static bool NoModesActive
@@ -72,6 +80,16 @@ namespace KappAIO.Common
         {
             return !target.HasBuff("kindredrnodeathbuff") && !target.Buffs.Any(b => b.Name.ToLower().Contains("fioraw")) && !target.HasBuff("JudicatorIntervention") && !target.IsZombie
                    && !target.HasBuff("ChronoShift") && !target.HasBuff("UndyingRage") && !target.IsInvulnerable && !target.IsZombie && !target.HasBuff("bansheesveil") && !target.IsDead
+                   && !target.IsPhysicalImmune && target.Health > 0 && !target.HasBuffOfType(BuffType.Invulnerability) && !target.HasBuffOfType(BuffType.PhysicalImmunity) && target.IsValidTarget();
+        }
+
+        /// <summary>
+        ///     Returns true if you can deal damage to the target (AIHeroClient).
+        /// </summary>
+        public static bool IsKillable(this AIHeroClient target)
+        {
+            return !target.HasBuff("kindredrnodeathbuff") && !target.Buffs.Any(b => b.Name.ToLower().Contains("fioraw")) && !target.HasBuff("JudicatorIntervention") && !target.IsZombie
+                   && !target.HasBuff("ChronoShift") && !target.HasBuff("UndyingRage") && !target.HasUndyingBuff() && !target.IsInvulnerable && !target.IsZombie && !target.HasBuff("bansheesveil") && !target.IsDead
                    && !target.IsPhysicalImmune && target.Health > 0 && !target.HasBuffOfType(BuffType.Invulnerability) && !target.HasBuffOfType(BuffType.PhysicalImmunity) && target.IsValidTarget();
         }
 
