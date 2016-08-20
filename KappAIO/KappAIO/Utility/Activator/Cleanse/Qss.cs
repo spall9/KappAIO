@@ -68,9 +68,16 @@ namespace KappAIO.Utility.Activator.Cleanse
         {
             try
             {
+                if (Player.Instance.IsDead)
+                {
+                    SavedBuffs.RemoveAll(b => b.Owner.IsMe);
+                    return;
+                }
+
                 foreach (var saved in SavedBuffs.Where(a => a.Owner != null && Clean.CheckBoxValue(a.buff.ToString()) && a.Owner.IsKillable()))
                 {
                     CastQss(saved.Owner);
+                    return;
                 }
             }
             catch (Exception ex)

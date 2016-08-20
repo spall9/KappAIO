@@ -4,7 +4,7 @@ using KappAIO.Common;
 
 namespace KappAIO.Champions.Kalista
 {
-    static class Rend
+    internal static class Rend
     {
         public static bool EKill(this Obj_AI_Base target)
         {

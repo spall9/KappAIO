@@ -176,7 +176,6 @@ namespace KappAIO.Champions.Kalista
 
         public override void Flee()
         {
-;
         }
 
         public override void Harass()
