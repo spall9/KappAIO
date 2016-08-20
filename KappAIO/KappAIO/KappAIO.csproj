@@ -59,6 +59,8 @@
     <Compile Include="Champions\Base.cs" />
     <Compile Include="Champions\Kalista\Kalista.cs" />
     <Compile Include="Champions\Kalista\Rend.cs" />
+    <Compile Include="Champions\Viktor\Vectors.cs" />
+    <Compile Include="Champions\Viktor\Viktor.cs" />
     <Compile Include="CheckVersion.cs" />
     <Compile Include="Common\Events.cs" />
     <Compile Include="Common\KappaEvade\Collision.cs" />

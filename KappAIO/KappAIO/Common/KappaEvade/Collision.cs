@@ -17,7 +17,7 @@ namespace KappAIO.Common.KappaEvade
             Game.OnTick += Game_OnTick;
             GameObject.OnCreate += delegate(GameObject sender, EventArgs args)
                 {
-                    if (sender.IsAlly)
+                    if (sender != null && sender.IsAlly)
                     {
                         if (sender.Name.Contains("Yasuo_Base_W_windwall") && !sender.Name.Contains("_activate.troy"))
                         {
@@ -27,7 +27,7 @@ namespace KappAIO.Common.KappaEvade
                 };
             GameObject.OnDelete += delegate(GameObject sender, EventArgs args)
             {
-                if (sender.IsAlly)
+                if (sender != null && sender.IsAlly)
                 {
                     if (sender.Name.Contains("Yasuo_Base_W_windwall") && !sender.Name.Contains("_activate.troy"))
                     {
@@ -42,7 +42,7 @@ namespace KappAIO.Common.KappaEvade
             var objects = new List<Obj_AI_Base>();
             objects.Clear();
             NewSpells.Clear();
-            foreach (var spell in KappaEvade.DetectedSpells)
+            foreach (var spell in KappaEvade.DetectedSpells.Where(s => s.Caster != null))
             {
                 var range = spell.Range;
                 var endpos = spell.End;

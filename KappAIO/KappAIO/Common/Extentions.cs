@@ -167,7 +167,7 @@ namespace KappAIO.Common
         /// <summary>
         ///     Returns true if the spell will kill the target.
         /// </summary>
-        public static bool WillKill(this Spell.SpellBase spell, Obj_AI_Base target, int MultiplyDmgBy = 1)
+        public static bool WillKill(this Spell.SpellBase spell, Obj_AI_Base target, float MultiplyDmgBy = 1)
         {
             return Player.Instance.GetSpellDamage(target, spell.Slot) * MultiplyDmgBy >= Prediction.Health.GetPrediction(target, (int)(spell.CastDelay + (Player.Instance.Distance(target) / spell.Handle.SData.MissileSpeed) * 1000));
         }
