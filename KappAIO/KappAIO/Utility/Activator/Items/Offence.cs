@@ -46,7 +46,9 @@ namespace KappAIO.Utility.Activator.Items
         {
             try
             {
-                foreach (var i in HPItems.Where(a => a.ItemReady(Offen) && Offen.CompareSlider(a.Id + "hp", Player.Instance.HealthPercent)))
+                if (!Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.Combo))
+                    return;
+                foreach (var i in HPItems.Where(a => a.ItemReady(Offen) && Offen.SliderValue(a.Id + "hp") >= Player.Instance.HealthPercent))
                 {
                     var target = TargetSelector.GetTarget(i.Range, DamageType.Magical);
                     if (target != null && target.IsKillable(i.Range))

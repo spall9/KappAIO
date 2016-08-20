@@ -61,7 +61,7 @@ namespace KappAIO.Utility.Activator.Items
 
                 if (args.Target.IsAlly && !args.Target.IsMe && Def.CheckBoxValue("ally"))
                 {
-                    if (Solari.ItemReady(Def) && Solari.IsInRange(args.Target) && Def.CompareSlider(Solari.Id + "hp", args.Target.HealthPercent))
+                    if (Solari.ItemReady(Def) && Def.SliderValue(Solari.Id + "hp") >= args.Target.HealthPercent)
                     {
                         Solari.Cast();
                         return;
@@ -69,17 +69,17 @@ namespace KappAIO.Utility.Activator.Items
                 }
                 if (args.Target.IsMe)
                 {
-                    if (Zhonyas.ItemReady(Def) && Def.CompareSlider(Zhonyas.Id + "hp", args.Target.HealthPercent))
+                    if (Zhonyas.ItemReady(Def) && Def.SliderValue(Zhonyas.Id + "hp") >= args.Target.HealthPercent)
                     {
                         Zhonyas.Cast();
                         return;
                     }
-                    if (Seraphs.ItemReady(Def) && Def.CompareSlider(Seraphs.Id + "hp", args.Target.HealthPercent))
+                    if (Seraphs.ItemReady(Def) && Def.SliderValue(Seraphs.Id + "hp") >= args.Target.HealthPercent)
                     {
                         Seraphs.Cast();
                         return;
                     }
-                    if (Solari.ItemReady(Def) && Def.CompareSlider(Solari.Id + "hp", args.Target.HealthPercent))
+                    if (Solari.ItemReady(Def) && Def.SliderValue(Solari.Id + "hp") >= args.Target.HealthPercent)
                     {
                         Solari.Cast();
                     }
