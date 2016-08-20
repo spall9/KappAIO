@@ -11,7 +11,7 @@ namespace KappAIO
     {
         private static Text text;
         private static string UpdateMsg = string.Empty;
-        private const string UpdateMsgPath = "https://raw.githubusercontent.com/plsfixrito/KappAIO/master/KappAIO/KappAIO/msg.txt";
+        private const string UpdateMsgPath = "https://raw.githubusercontent.com/plsfixrito/KappAIO/master/KappAIO/msg.txt";
         private const string WebVersionPath = "https://raw.githubusercontent.com/plsfixrito/KappAIO/master/KappAIO/KappAIO/Properties/AssemblyInfo.cs";
         private static readonly Version CurrentVersion = typeof(CheckVersion).Assembly.GetName().Version;
         public static bool Outdated;
