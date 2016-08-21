@@ -3,13 +3,15 @@ using System.Collections.Generic;
 using EloBuddy;
 using EloBuddy.SDK.Events;
 using KappAIO.Champions;
+using KappAIO.Common;
 using KappAIO.Common.KappaEvade;
 
 namespace KappAIO
 {
     internal class Program
     {
-        private static readonly List<Champion> SupportedHeros = new List<Champion> { Champion.Kalista, Champion.Viktor };
+        private static readonly List<Champion> SupportedHeros = new List<Champion> { //Champion.Gangplank,
+            Champion.Kalista, Champion.Viktor };
 
         private static void Main(string[] args)
         {
@@ -23,6 +25,7 @@ namespace KappAIO
             KappaEvade.Init();
             CheckVersion.Init();
             Utility.Activator.Load.Init();
+            Events.Init();
         }
     }
 }
