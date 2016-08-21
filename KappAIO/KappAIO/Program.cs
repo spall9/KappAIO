@@ -10,8 +10,7 @@ namespace KappAIO
 {
     internal class Program
     {
-        private static readonly List<Champion> SupportedHeros = new List<Champion> { //Champion.Gangplank,
-            Champion.Kalista, Champion.Viktor };
+        private static readonly List<Champion> SupportedHeros = new List<Champion> { Champion.Gangplank, Champion.Kalista, Champion.Viktor };
 
         private static void Main(string[] args)
         {

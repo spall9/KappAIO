@@ -27,7 +27,7 @@ namespace KappAIO.Utility.Activator.Spells
         private static void Events_OnIncomingDamage(Events.InComingDamageEventArgs args)
         {
             if(args.Target == null || !args.Target.IsKillable() || args.Target.Distance(Player.Instance) > 800 || !SummonerSpells.Heal.IsReady()) return;
-
+            
             var damagepercent = args.InComingDamage / args.Target.TotalShieldHealth() * 100;
             var death = args.InComingDamage >= args.Target.Health && args.Target.HealthPercent < 99;
 
