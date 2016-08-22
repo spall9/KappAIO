@@ -2,6 +2,7 @@
 using EloBuddy;
 using EloBuddy.SDK;
 using EloBuddy.SDK.Enumerations;
+using EloBuddy.SDK.Menu;
 using EloBuddy.SDK.Rendering;
 using KappAIO.Common;
 using SharpDX;
@@ -27,13 +28,43 @@ namespace KappAIO.Champions.Gangplank
             E = new Spell.Skillshot(SpellSlot.E, 1000, SkillShotType.Circular, 250, int.MaxValue, 325);
             R = new Spell.Skillshot(SpellSlot.R, int.MaxValue, SkillShotType.Circular, 250, int.MaxValue, 600);
 
-            //Obj_AI_Base.OnProcessSpellCast += Obj_AI_Base_OnProcessSpellCast;
+            MenuIni = MainMenu.AddMenu(MenuName, MenuName);
+            AutoMenu = MenuIni.AddSubMenu("Auto");
+            ComboMenu = MenuIni.AddSubMenu("Combo");
+            HarassMenu = MenuIni.AddSubMenu("Harass");
+            JungleClearMenu = MenuIni.AddSubMenu("JungleClear");
+            LaneClearMenu = MenuIni.AddSubMenu("LaneClear");
+            KillStealMenu = MenuIni.AddSubMenu("KillSteal");
+            DrawMenu = MenuIni.AddSubMenu("Drawings");
+            SpellList.Add(Q);
+            SpellList.Add(E);
+            SpellList.Add(R);
+            SpellList.ForEach(
+                i =>
+                {
+                    ComboMenu.CreateCheckBox(i.Slot, "Use " + i.Slot);
+                    if (i != R)
+                    {
+                        HarassMenu.CreateCheckBox(i.Slot, "Use " + i.Slot);
+                        HarassMenu.CreateSlider(i.Slot + "mana", i.Slot + " Mana Manager {0}%", 60);
+                        HarassMenu.AddSeparator(0);
+                        LaneClearMenu.CreateCheckBox(i.Slot, "Use " + i.Slot);
+                        LaneClearMenu.CreateSlider(i.Slot + "mana", i.Slot + " Mana Manager {0}%", 60);
+                        LaneClearMenu.AddSeparator(0);
+                        JungleClearMenu.CreateCheckBox(i.Slot, "Use " + i.Slot);
+                        JungleClearMenu.CreateSlider(i.Slot + "mana", i.Slot + " Mana Manager {0}%", 60);
+                        JungleClearMenu.AddSeparator(0);
+                        DrawMenu.CreateCheckBox(i.Slot, "Draw " + i.Slot);
+                    }
+                    KillStealMenu.CreateCheckBox(i.Slot, i.Slot + " KillSteal");
+                });
+
             Spellbook.OnCastSpell += Spellbook_OnCastSpell;
         }
 
         private static void Spellbook_OnCastSpell(Spellbook sender, SpellbookCastSpellEventArgs args)
         {
-            if (sender.Owner.IsMe && args.Slot == SpellSlot.Q)
+            if (sender.Owner.IsMe && args.Slot == SpellSlot.Q && Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.Combo))
             {
                 Chat.Print("fire1");
                 var target = TargetSelector.GetTarget(E.Range, DamageType.Physical);
@@ -73,9 +104,10 @@ namespace KappAIO.Champions.Gangplank
                         }
                         if (position != Vector3.Zero)
                         {
+                            Chat.Print("fire9");
                             if (BarrelsList.Count(b => b.Barrel.Distance(position) <= E.Width) < 0)
                             {
-                                Chat.Print("fire9");
+                                Chat.Print("fire10");
                                 E.Cast(position);
                             }
                         }
@@ -86,6 +118,10 @@ namespace KappAIO.Champions.Gangplank
 
         public override void Active()
         {
+            if (user.IsCC())
+            {
+                W.Cast();
+            }
         }
 
         public override void Combo()
@@ -93,15 +129,26 @@ namespace KappAIO.Champions.Gangplank
             var target = TargetSelector.GetTarget(E.Range + 100, DamageType.Physical);
             if(target == null || !target.IsKillable(E.Range)) return;
             
+            var castpos = E.GetPrediction(target).CastPosition;
+
             Orbwalker.ForcedTarget = AABarrel(target);
 
-            if(AABarrel(target) != null) return;
-
-            var castpos = E.GetPrediction(target).CastPosition;
+            if (AABarrel(target) != null)
+            {
+                if (E.IsReady())
+                {
+                    if (BarrelsList.Count(b => b.Barrel.Distance(user) <= Q.Range) > 0 && BarrelsList.Count(b => b.Barrel.Distance(castpos) <= E.Width) < 0)
+                    {
+                        E.Cast(castpos);
+                    }
+                }
+                //Player.IssueOrder(GameObjectOrder.AttackUnit, AABarrel(target));
+                return;
+            }
 
             if (Q.IsReady())
             {
-                if (BarrelsList.Count(b => b.Barrel.Distance(user) <= E.Range) < 1 && !E.IsReady() && target.IsKillable(Q.Range))
+                if (((BarrelsList.Count(b => b.Barrel.Distance(user) <= E.Range) < 1 && !E.IsReady()) || Q.WillKill(target)) && target.IsKillable(Q.Range))
                 {
                     Q.Cast(target);
                 }
@@ -135,7 +182,8 @@ namespace KappAIO.Champions.Gangplank
                             if (targetbarrel != null && KillableBarrel(targetbarrel) != null)
                             {
                                 var Secondbarrel = BarrelsList.FirstOrDefault(b => b.Barrel.NetworkId != KillableBarrel(targetbarrel).NetworkId && b.Barrel.Distance(KillableBarrel(targetbarrel)) <= ConnectionRange);
-                                E.Cast(Secondbarrel?.Barrel.Position.Extend(castpos, ConnectionRange).To3D() ?? KillableBarrel(targetbarrel).Position.Extend(castpos, ConnectionRange).To3D());
+                                castpos = Secondbarrel?.Barrel.Position.Extend(castpos, ConnectionRange).To3D() ?? KillableBarrel(targetbarrel).Position.Extend(castpos, ConnectionRange).To3D();
+                                E.Cast(castpos);
                             }
                         }
                         else
@@ -144,6 +192,10 @@ namespace KappAIO.Champions.Gangplank
                         }
                     }
                 }
+            }
+            if (R.IsReady())
+            {
+                //R.CastIfItWillHit(3);
             }
         }
 
@@ -157,6 +209,39 @@ namespace KappAIO.Champions.Gangplank
 
         public override void LaneClear()
         {
+            if (E.IsReady())
+            {
+                foreach (var minion in EntityManager.MinionsAndMonsters.EnemyMinions.OrderBy(m => m.Health).Where(m => m.IsKillable(E.Range)))
+                {
+                    var pred = E.GetPrediction(minion);
+                    if (pred.CastPosition.CountEnemyMinionsInRange(E.Width) > 1)
+                    {
+                        if (BarrelsList.Count(b => b.Barrel.IsInRange(pred.CastPosition, E.Width)) < 1
+                            || (BarrelsList.Count(b => b.Barrel.IsInRange(pred.CastPosition, ConnectionRange)) > 0 && BarrelsList.Count(b => b.Barrel.IsInRange(pred.CastPosition, E.Width)) < 1))
+                        {
+                            E.Cast(pred.CastPosition);
+                        }
+                    }
+                }
+            }
+            if (Q.IsReady())
+            {
+                var barrel = BarrelsList.OrderByDescending(b => b.Barrel.CountEnemyMinionsInRange(E.Width)).FirstOrDefault(m => KillableBarrel(m) != null && m.Barrel.CountEnemyMinionsInRange(E.Width) > 0 && (KillableBarrel(m).IsValidTarget(Q.Range) || KillableBarrel(m).IsInRange(user, user.GetAutoAttackRange())));
+                if (barrel != null)
+                {
+                    if (KillableBarrel(barrel).IsValidTarget(Q.Range) && !KillableBarrel(barrel).IsValidTarget(user.GetAutoAttackRange()))
+                    {
+                        Q.Cast(barrel.Barrel);
+                    }
+                }
+                else
+                {
+                    foreach (var minion in EntityManager.MinionsAndMonsters.EnemyMinions.OrderBy(m => m.Health).Where(m => m.IsKillable(Q.Range) && Q.WillKill(m) && !BarrelsList.Any(b => b.Barrel.Distance(m) <= E.Width)))
+                    {
+                        Q.Cast(minion);
+                    }
+                }
+            }
         }
 
         public override void JungleClear()
@@ -182,7 +267,7 @@ namespace KappAIO.Champions.Gangplank
                     Circle.Draw(Color.AliceBlue, 325, B.Barrel);
                 }
             }*/
-
+            
             foreach (var b in BarrelsList)
             {
                 if (KillableBarrel(b) != null)
@@ -204,7 +289,8 @@ namespace KappAIO.Champions.Gangplank
                     if (targetbarrel != null && KillableBarrel(targetbarrel) != null)
                     {
                         var Secondbarrel = BarrelsList.FirstOrDefault(b => b.Barrel.NetworkId != KillableBarrel(targetbarrel).NetworkId && b.Barrel.Distance(KillableBarrel(targetbarrel)) <= ConnectionRange);
-                        Circle.Draw(Color.PaleVioletRed, 325, Secondbarrel?.Barrel.Position.Extend(castpos, ConnectionRange).To3D() ?? KillableBarrel(targetbarrel).Position.Extend(castpos, ConnectionRange).To3D());
+                        castpos = Secondbarrel?.Barrel.Position.Extend(castpos, ConnectionRange).To3D() ?? KillableBarrel(targetbarrel).Position.Extend(castpos, ConnectionRange).To3D();
+                        Circle.Draw(Color.PaleVioletRed, 325, castpos);
                     }
                 }
                 else

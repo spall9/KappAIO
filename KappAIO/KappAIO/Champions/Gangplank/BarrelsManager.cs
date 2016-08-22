@@ -6,7 +6,7 @@ using EloBuddy.SDK;
 
 namespace KappAIO.Champions.Gangplank
 {
-    class BarrelsManager
+    internal class BarrelsManager
     {
         internal static readonly List<Barrels> BarrelsList = new List<Barrels>();
 
@@ -84,13 +84,10 @@ namespace KappAIO.Champions.Gangplank
                         return KillableBarrel(A);
                     }
 
-                    var Secondbarrel = BarrelsList.FirstOrDefault(b => b.Barrel.NetworkId != KillableBarrel(A).NetworkId && b.Barrel.Distance(KillableBarrel(A)) <= Gangplank.ConnectionRange);
+                    var Secondbarrel = BarrelsList.FirstOrDefault(b => b.Barrel.NetworkId != KillableBarrel(A).NetworkId && b.Barrel.Distance(KillableBarrel(A)) <= Gangplank.ConnectionRange && b.Barrel.Distance(target) <= Gangplank.E.Width);
                     if (Secondbarrel != null)
                     {
-                        if (target.IsInRange(Secondbarrel.Barrel, Gangplank.E.Width))
-                        {
-                            return Secondbarrel.Barrel;
-                        }
+                        return KillableBarrel(A);
                     }
                 }
             }
