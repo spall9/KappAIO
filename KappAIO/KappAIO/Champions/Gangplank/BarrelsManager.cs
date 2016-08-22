@@ -68,7 +68,7 @@ namespace KappAIO.Champions.Gangplank
             return Player.Instance.Level < 13 ? 2000 : 1000;
         }
 
-        private  static float QTravelTime(Obj_AI_Base Target)
+        internal static float QTravelTime(Obj_AI_Base Target)
         {
             return Player.Instance.Distance(Target) / (Player.Instance.Crit < 0.05f ? 2600f : 3000f) * 1000 + 300;
         }
@@ -86,6 +86,11 @@ namespace KappAIO.Champions.Gangplank
 
                     var Secondbarrel = BarrelsList.FirstOrDefault(b => b.Barrel.NetworkId != KillableBarrel(A).NetworkId && b.Barrel.Distance(KillableBarrel(A)) <= Gangplank.ConnectionRange && b.Barrel.Distance(target) <= Gangplank.E.Width);
                     if (Secondbarrel != null)
+                    {
+                        return BarrelsList.Any(b => b.Barrel.NetworkId != Secondbarrel.Barrel.NetworkId && b.Barrel.Distance(Secondbarrel.Barrel) <= Gangplank.ConnectionRange && b.Barrel.CountEnemiesInRange(Gangplank.E.Width) > 0) ? KillableBarrel(A) : KillableBarrel(A);
+                    }
+
+                    if (BarrelsList.Any(b => b.Barrel.NetworkId != KillableBarrel(A).NetworkId && b.Barrel.Distance(KillableBarrel(A)) <= Gangplank.ConnectionRange && b.Barrel.CountEnemiesInRange(Gangplank.E.Width) > 0))
                     {
                         return KillableBarrel(A);
                     }

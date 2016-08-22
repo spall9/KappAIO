@@ -5,6 +5,7 @@ using EloBuddy.SDK;
 using EloBuddy.SDK.Enumerations;
 using EloBuddy.SDK.Menu;
 using EloBuddy.SDK.Menu.Values;
+using SharpDX;
 
 namespace KappAIO.Common
 {
@@ -178,6 +179,14 @@ namespace KappAIO.Common
         public static bool IsBigMinion(this Obj_AI_Base target)
         {
             return target.BaseSkinName.ToLower().Contains("siege") || target.BaseSkinName.ToLower().Contains("super");
+        }
+
+        /// <summary>
+        ///     Returns true if the target is big minion (Siege / Super Minion).
+        /// </summary>
+        public static Vector3 PrediectPosition(this Obj_AI_Base target, int Time)
+        {
+            return Prediction.Position.PredictUnitPosition(target, Time).To3D();
         }
     }
 }

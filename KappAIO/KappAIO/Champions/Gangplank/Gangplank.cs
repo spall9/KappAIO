@@ -12,7 +12,7 @@ namespace KappAIO.Champions.Gangplank
 {
     internal class Gangplank : Base
     {
-        internal static int ConnectionRange = 680;
+        internal static int ConnectionRange = 685;
 
         public static Spell.Targeted Q { get; }
         public static Spell.Active W { get; }
@@ -64,13 +64,13 @@ namespace KappAIO.Champions.Gangplank
 
         private static void Spellbook_OnCastSpell(Spellbook sender, SpellbookCastSpellEventArgs args)
         {
-            if (sender.Owner.IsMe && args.Slot == SpellSlot.Q && Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.Combo))
+            if (sender.Owner.IsMe && Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.Combo))
             {
                 Chat.Print("fire1");
                 var target = TargetSelector.GetTarget(E.Range, DamageType.Physical);
                 var position = Vector3.Zero;
                 var startposition = Vector3.Zero;
-                if (args.Slot == SpellSlot.Q)
+                if (args.Slot == SpellSlot.Q && E.IsReady())
                 {
                     Chat.Print("fire2");
                     var barrel = BarrelsList.FirstOrDefault(b => b.Barrel.NetworkId == args.Target.NetworkId);
@@ -89,7 +89,7 @@ namespace KappAIO.Champions.Gangplank
                             if (target.Distance(startposition) <= ConnectionRange + E.Width && target.Distance(startposition) > E.Width - 75)
                             {
                                 Chat.Print("fire6");
-                                position = E.GetPrediction(target).CastPosition;
+                                position = target.Distance(startposition) < E.Width + ConnectionRange ? E.GetPrediction(target).CastPosition : startposition.Extend(E.GetPrediction(target).CastPosition, ConnectionRange).To3D();
                             }
                         }
                         else
@@ -99,7 +99,7 @@ namespace KappAIO.Champions.Gangplank
                             if (target != null)
                             {
                                 Chat.Print("fire8");
-                                position = E.GetPrediction(target).CastPosition;
+                                position = target.Distance(startposition) < E.Width + ConnectionRange ? E.GetPrediction(target).CastPosition : startposition.Extend(E.GetPrediction(target).CastPosition, ConnectionRange).To3D();
                             }
                         }
                         if (position != Vector3.Zero)
@@ -126,9 +126,10 @@ namespace KappAIO.Champions.Gangplank
 
         public override void Combo()
         {
-            var target = TargetSelector.GetTarget(E.Range + 100, DamageType.Physical);
+            var target = TargetSelector.GetTarget(E.Range + 300, DamageType.Physical);
             if(target == null || !target.IsKillable(E.Range)) return;
-            
+
+            var pred = target.PrediectPosition((int)QTravelTime(target));
             var castpos = E.GetPrediction(target).CastPosition;
 
             Orbwalker.ForcedTarget = AABarrel(target);
@@ -142,7 +143,7 @@ namespace KappAIO.Champions.Gangplank
                         E.Cast(castpos);
                     }
                 }
-                //Player.IssueOrder(GameObjectOrder.AttackUnit, AABarrel(target));
+                Player.IssueOrder(GameObjectOrder.AttackUnit, AABarrel(target));
                 return;
             }
 
@@ -157,7 +158,7 @@ namespace KappAIO.Champions.Gangplank
                 {
                     if (KillableBarrel(A) != null && KillableBarrel(A).IsValidTarget(Q.Range))
                     {
-                        if (target.IsInRange(KillableBarrel(A), E.Width))
+                        if (pred.IsInRange(KillableBarrel(A), E.Width))
                         {
                             Q.Cast(KillableBarrel(A));
                         }
@@ -165,7 +166,18 @@ namespace KappAIO.Champions.Gangplank
                         var Secondbarrel = BarrelsList.FirstOrDefault(b => b.Barrel.NetworkId != KillableBarrel(A).NetworkId && b.Barrel.Distance(KillableBarrel(A)) <= ConnectionRange);
                         if (Secondbarrel != null)
                         {
-                            if (target.IsInRange(Secondbarrel.Barrel, E.Width))
+                            if (pred.IsInRange(Secondbarrel.Barrel, E.Width))
+                            {
+                                Q.Cast(KillableBarrel(A));
+                            }
+                            if (BarrelsList.Any(b => b.Barrel.NetworkId != Secondbarrel.Barrel.NetworkId && b.Barrel.Distance(Secondbarrel.Barrel) <= ConnectionRange && b.Barrel.CountEnemiesInRange(E.Width) > 0))
+                            {
+                                Q.Cast(KillableBarrel(A));
+                            }
+                        }
+                        else
+                        {
+                            if (BarrelsList.Any(b => b.Barrel.NetworkId != KillableBarrel(A).NetworkId && b.Barrel.Distance(KillableBarrel(A)) <= ConnectionRange && b.Barrel.CountEnemiesInRange(E.Width) > 0))
                             {
                                 Q.Cast(KillableBarrel(A));
                             }
@@ -176,9 +188,9 @@ namespace KappAIO.Champions.Gangplank
                 {
                     if (BarrelsList.Count(b => b.Barrel.IsInRange(target, E.Width)) < 1)
                     {
-                        if (BarrelsList.Count(b => b.Barrel.IsInRange(target, E.Radius + ConnectionRange)) > 0)
+                        if (BarrelsList.Count(b => b.Barrel.IsInRange(target, E.Width + ConnectionRange)) > 0)
                         {
-                            var targetbarrel = BarrelsList.FirstOrDefault(b => KillableBarrel(b) != null && (b.Barrel.IsValidTarget(Q.Range) || b.Barrel.IsValidTarget(user.GetAutoAttackRange())) && b.Barrel.IsInRange(target, E.Radius + ConnectionRange));
+                            var targetbarrel = BarrelsList.FirstOrDefault(b => KillableBarrel(b) != null && (b.Barrel.IsValidTarget(Q.Range) || b.Barrel.IsValidTarget(user.GetAutoAttackRange())) && b.Barrel.IsInRange(target, E.Width + ConnectionRange));
                             if (targetbarrel != null && KillableBarrel(targetbarrel) != null)
                             {
                                 var Secondbarrel = BarrelsList.FirstOrDefault(b => b.Barrel.NetworkId != KillableBarrel(targetbarrel).NetworkId && b.Barrel.Distance(KillableBarrel(targetbarrel)) <= ConnectionRange);
@@ -188,7 +200,10 @@ namespace KappAIO.Champions.Gangplank
                         }
                         else
                         {
-                            E.Cast(castpos);
+                            if (E.Handle.Ammo > 1)
+                            {
+                                E.Cast(castpos);
+                            }
                         }
                     }
                 }
@@ -209,23 +224,23 @@ namespace KappAIO.Champions.Gangplank
 
         public override void LaneClear()
         {
-            if (E.IsReady())
+            if (Q.IsReady())
             {
-                foreach (var minion in EntityManager.MinionsAndMonsters.EnemyMinions.OrderBy(m => m.Health).Where(m => m.IsKillable(E.Range)))
+                if (E.IsReady())
                 {
-                    var pred = E.GetPrediction(minion);
-                    if (pred.CastPosition.CountEnemyMinionsInRange(E.Width) > 1)
+                    foreach (var minion in EntityManager.MinionsAndMonsters.EnemyMinions.OrderBy(m => m.Health).Where(m => m.IsKillable(E.Range)))
                     {
-                        if (BarrelsList.Count(b => b.Barrel.IsInRange(pred.CastPosition, E.Width)) < 1
-                            || (BarrelsList.Count(b => b.Barrel.IsInRange(pred.CastPosition, ConnectionRange)) > 0 && BarrelsList.Count(b => b.Barrel.IsInRange(pred.CastPosition, E.Width)) < 1))
+                        var pred = E.GetPrediction(minion);
+                        if (pred.CastPosition.CountEnemyMinionsInRange(E.Width) > 1)
                         {
-                            E.Cast(pred.CastPosition);
+                            if (BarrelsList.Count(b => b.Barrel.IsInRange(pred.CastPosition, E.Width)) < 1
+                                || (BarrelsList.Count(b => b.Barrel.IsInRange(pred.CastPosition, ConnectionRange)) > 0 && BarrelsList.Count(b => b.Barrel.IsInRange(pred.CastPosition, E.Width)) < 1))
+                            {
+                                E.Cast(pred.CastPosition);
+                            }
                         }
                     }
                 }
-            }
-            if (Q.IsReady())
-            {
                 var barrel = BarrelsList.OrderByDescending(b => b.Barrel.CountEnemyMinionsInRange(E.Width)).FirstOrDefault(m => KillableBarrel(m) != null && m.Barrel.CountEnemyMinionsInRange(E.Width) > 0 && (KillableBarrel(m).IsValidTarget(Q.Range) || KillableBarrel(m).IsInRange(user, user.GetAutoAttackRange())));
                 if (barrel != null)
                 {
@@ -236,7 +251,7 @@ namespace KappAIO.Champions.Gangplank
                 }
                 else
                 {
-                    foreach (var minion in EntityManager.MinionsAndMonsters.EnemyMinions.OrderBy(m => m.Health).Where(m => m.IsKillable(Q.Range) && Q.WillKill(m) && !BarrelsList.Any(b => b.Barrel.Distance(m) <= E.Width)))
+                    foreach (var minion in EntityManager.MinionsAndMonsters.EnemyMinions.OrderByDescending(m => m.Distance(user)).Where(m => m.IsKillable(Q.Range) && Q.WillKill(m) && !BarrelsList.Any(b => b.Barrel.Distance(m) <= E.Width)))
                     {
                         Q.Cast(minion);
                     }
@@ -254,19 +269,23 @@ namespace KappAIO.Champions.Gangplank
 
         public override void Draw()
         {
-            /*
+            foreach (var spell in SpellList.Where(s => s != R && DrawMenu.CheckBoxValue(s.Slot)))
+            {
+                Circle.Draw(spell.IsReady() ? SharpDX.Color.Chartreuse : SharpDX.Color.OrangeRed, spell.Range, user);
+            }
+
             foreach (var A in BarrelsList)
             {
-                Circle.Draw(Color.AliceBlue, 325, A.Barrel);
+                //Circle.Draw(Color.AliceBlue, 325, A.Barrel);
                 foreach (var B in BarrelsList.Where(b => b.Barrel.NetworkId != A.Barrel.NetworkId))
                 {
                     if (B.Barrel.Distance(A.Barrel) <= ConnectionRange)
                     {
                         Drawing.DrawLine(new Vector2(A.Barrel.ServerPosition.WorldToScreen().X, A.Barrel.ServerPosition.WorldToScreen().Y), new Vector2(B.Barrel.ServerPosition.WorldToScreen().X, B.Barrel.ServerPosition.WorldToScreen().Y), 2, System.Drawing.Color.Red);
                     }
-                    Circle.Draw(Color.AliceBlue, 325, B.Barrel);
+                    //Circle.Draw(Color.AliceBlue, 325, B.Barrel);
                 }
-            }*/
+            }
             
             foreach (var b in BarrelsList)
             {
@@ -283,9 +302,9 @@ namespace KappAIO.Champions.Gangplank
 
             if (BarrelsList.Count(b => b.Barrel.IsInRange(target, E.Width)) < 1)
             {
-                if (BarrelsList.Count(b => b.Barrel.IsInRange(target, E.Radius + ConnectionRange)) > 0)
+                if (BarrelsList.Count(b => b.Barrel.IsInRange(target, E.Width + ConnectionRange)) > 0)
                 {
-                    var targetbarrel = BarrelsList.FirstOrDefault(b => KillableBarrel(b) != null && (b.Barrel.IsValidTarget(Q.Range) || b.Barrel.IsValidTarget(user.GetAutoAttackRange())) && b.Barrel.IsInRange(target, E.Radius + ConnectionRange));
+                    var targetbarrel = BarrelsList.FirstOrDefault(b => KillableBarrel(b) != null && (b.Barrel.IsValidTarget(Q.Range) || b.Barrel.IsValidTarget(user.GetAutoAttackRange())) && b.Barrel.IsInRange(target, E.Width + ConnectionRange));
                     if (targetbarrel != null && KillableBarrel(targetbarrel) != null)
                     {
                         var Secondbarrel = BarrelsList.FirstOrDefault(b => b.Barrel.NetworkId != KillableBarrel(targetbarrel).NetworkId && b.Barrel.Distance(KillableBarrel(targetbarrel)) <= ConnectionRange);
