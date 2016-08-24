@@ -75,8 +75,8 @@ namespace KappAIO.Champions.Viktor
 
             var rectlist = new List<Geometry.Polygon.Rectangle>();
             rectlist.Clear();
-            Vector3 Start = new Vector3();
-            Vector3 End = new Vector3();
+            Vector3 Start;
+            Vector3 End;
             var mobs = EntityManager.MinionsAndMonsters.EnemyMinions.OrderBy(o => o.Health).Where(e => e.IsKillable(Viktor.E.Range));
 
             if (Jungle)

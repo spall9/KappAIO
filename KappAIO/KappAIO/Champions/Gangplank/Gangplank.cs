@@ -218,7 +218,7 @@ namespace KappAIO.Champions.Gangplank
                             var targetbarrel = BarrelsList.OrderBy(b => b.Barrel.Distance(target)).FirstOrDefault(b => KillableBarrel(b) != null && (b.Barrel.IsValidTarget(Q.Range) || b.Barrel.IsValidTarget(user.GetAutoAttackRange())) && b.Barrel.IsInRange(target, E.Width + ConnectionRange));
                             if (targetbarrel != null && KillableBarrel(targetbarrel) != null)
                             {
-                                var Secondbarrel = BarrelsList.OrderBy(b => b.Barrel.Distance(target)).OrderBy(b => b.Barrel.Distance(target)).FirstOrDefault(b => b.Barrel.NetworkId != KillableBarrel(targetbarrel).NetworkId && b.Barrel.Distance(KillableBarrel(targetbarrel)) <= ConnectionRange);
+                                var Secondbarrel = BarrelsList.OrderBy(b => b.Barrel.Distance(target)).FirstOrDefault(b => b.Barrel.NetworkId != KillableBarrel(targetbarrel).NetworkId && b.Barrel.Distance(KillableBarrel(targetbarrel)) <= ConnectionRange);
                                 castpos = Secondbarrel?.Barrel.Distance(castpos) >= ConnectionRange ? KillableBarrel(targetbarrel).Position.Extend(castpos, ConnectionRange).To3D() : castpos;
                                 //Chat.Print("Casted");
                                 E.Cast(castpos);
@@ -233,8 +233,8 @@ namespace KappAIO.Champions.Gangplank
                                     E.Cast(castpos);
                                 }
 
-                                var circle = new Geometry.Polygon.Circle(castpos, E.Width);
-                                var grass = circle.Points.FirstOrDefault(p => p.IsGrass());
+                                var circle = new Geometry.Polygon.Circle(castpos, ConnectionRange);
+                                var grass = circle.Points.OrderBy(p => p.Distance(castpos)).FirstOrDefault(p => p.IsGrass());
                                 if (grass != null)
                                 {
                                     E.Cast(grass.To3D());

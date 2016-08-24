@@ -66,7 +66,7 @@ namespace KappAIO.Champions.Viktor
                     DrawMenu.CreateCheckBox(i.Slot, "Draw " + i.Slot);
                 });
 
-            AutoMenu.Add("Wmode", new ComboBox("GapCloser W Mode", 0, "Place On Self", "Place On Enemy"));
+            AutoMenu.Add("Wmode", new ComboBox("GapCloser W Mode", 1, "Place On Self", "Place On Enemy"));
             AutoMenu.CreateCheckBox("GapW", "Auto W Anti-GapCloser");
             AutoMenu.CreateCheckBox("IntW", "Auto W Interrupter");
             AutoMenu.CreateCheckBox("IntR", "Auto R Interrupter");
@@ -107,7 +107,7 @@ namespace KappAIO.Champions.Viktor
                 W.Cast(sender);
                 return;
             }
-            if (sender.IsKillable(R.Range) && AutoMenu.CheckBoxValue("IntR") && R.IsReady())
+            if (sender.IsKillable(R.Range) && AutoMenu.CheckBoxValue("IntR") && R.IsReady() && e.DangerLevel >= DangerLevel.Medium)
             {
                 R.Cast(sender);
             }
@@ -139,7 +139,7 @@ namespace KappAIO.Champions.Viktor
                 target.ECast();
             }
 
-            if (target.IsKillable(Q.Range) && ComboMenu.CheckBoxValue(SpellSlot.Q) && Q.IsReady())
+            if (target.IsKillable(user.GetAutoAttackRange()) && ComboMenu.CheckBoxValue(SpellSlot.Q) && Q.IsReady())
             {
                 Q.Cast(target);
             }
@@ -157,7 +157,14 @@ namespace KappAIO.Champions.Viktor
                     {
                         R.Cast(target);
                     }
-                    R.CastIfItWillHit(ComboMenu.SliderValue("RAOE"));
+
+                    foreach (var enemy in EntityManager.Heroes.Enemies.Where(e => e.IsKillable(R.Range + R.Width)))
+                    {
+                        if (enemy.CountEnemiesInRange(R.Width) >= ComboMenu.SliderValue("RAOE"))
+                        {
+                            R.Cast(enemy);
+                        }
+                    }
                 }
             }
         }
