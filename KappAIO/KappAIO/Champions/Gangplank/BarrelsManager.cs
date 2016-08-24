@@ -10,9 +10,32 @@ namespace KappAIO.Champions.Gangplank
     {
         internal static readonly List<Barrels> BarrelsList = new List<Barrels>();
 
-        public static void Init()
+        internal static void Init()
         {
             Game.OnTick += Game_OnTick;
+        }
+
+        private static float BarrelDamage(Obj_AI_Base target)
+        {
+            var Elvl = Gangplank.E.Level - 1;
+            var floats = new float[] { 0, 0, 0, 0, 0 };
+            if (target is AIHeroClient)
+            {
+                floats = new float[] { 60f, 90f, 120f, 150f, 180f };
+            }
+            return Player.Instance.CalculateDamageOnUnit(target, DamageType.Physical, Player.Instance.TotalAttackDamage + floats[Elvl]);
+        }
+
+        internal static bool BarrelKill(AIHeroClient target)
+        {
+            //Chat.Print(BarrelDamage(target));
+            return BarrelDamage(target) >= Prediction.Health.GetPrediction(target, Game.Ping);
+        }
+
+        internal static bool BarrelKill(Obj_AI_Base target)
+        {
+            //Chat.Print(BarrelDamage(target));
+            return BarrelDamage(target) >= Prediction.Health.GetPrediction(target, Game.Ping);
         }
 
         private static void Game_OnTick(EventArgs args)
@@ -28,7 +51,7 @@ namespace KappAIO.Champions.Gangplank
             BarrelsList.RemoveAll(b => b.Barrel.IsDead || !b.Barrel.IsValid || b.Barrel.Health <= 0);
         }
 
-        public class Barrels
+        internal class Barrels
         {
             public Obj_AI_Minion Barrel;
             public float StartTick;
@@ -40,7 +63,7 @@ namespace KappAIO.Champions.Gangplank
             }
         }
 
-        public static Obj_AI_Minion KillableBarrel(Barrels b)
+        internal static Obj_AI_Minion KillableBarrel(Barrels b)
         {
             if (Prediction.Health.GetPrediction(b.Barrel, (int)QTravelTime(b.Barrel)) < 2)
             {
@@ -58,7 +81,7 @@ namespace KappAIO.Champions.Gangplank
             return null;
         }
 
-        private static int HPTiming()
+        internal static int HPTiming()
         {
             if (Player.Instance.Level < 7)
             {

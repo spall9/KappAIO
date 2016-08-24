@@ -1,5 +1,4 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using EloBuddy;
 using EloBuddy.SDK;
 using EloBuddy.SDK.Enumerations;
@@ -9,7 +8,6 @@ using EloBuddy.SDK.Menu.Values;
 using EloBuddy.SDK.Rendering;
 using KappAIO.Common;
 using static KappAIO.Champions.Viktor.Vectors;
-using static KappAIO.Common.Extentions;
 
 namespace KappAIO.Champions.Viktor
 {
@@ -166,7 +164,6 @@ namespace KappAIO.Champions.Viktor
 
         public override void Flee()
         {
-            
         }
 
         public override void Harass()

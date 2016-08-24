@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using EloBuddy;
@@ -17,6 +18,7 @@ namespace KappAIO.Champions.Kalista
     internal class Kalista : Base
     {
         private static float LastE;
+        private static AIHeroClient BoundHero;
 
         public static Spell.Skillshot Q { get; }
         public static Spell.Skillshot W { get; }
@@ -85,6 +87,16 @@ namespace KappAIO.Champions.Kalista
             Spellbook.OnCastSpell += Spellbook_OnCastSpell;
             Events.OnIncomingDamage += Events_OnIncomingDamage;
             Gapcloser.OnGapcloser += Gapcloser_OnGapcloser;
+            //Obj_AI_Base.OnBuffGain += Obj_AI_Base_OnBuffGain;
+        }
+
+        private static void Obj_AI_Base_OnBuffGain(Obj_AI_Base sender, Obj_AI_BaseBuffGainEventArgs args)
+        {
+            var caster = sender as AIHeroClient;
+            if (caster != null && R.IsReady() && caster.IsEnemy && args.Buff.DisplayName.Equals("rocketgrab2", StringComparison.CurrentCultureIgnoreCase) && BoundHero?.Hero == Champion.Blitzcrank)
+            {
+                R.Cast();
+            }
         }
 
         private static void Gapcloser_OnGapcloser(AIHeroClient sender, Gapcloser.GapcloserEventArgs e)
