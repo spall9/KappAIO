@@ -189,6 +189,10 @@ namespace KappAIO.Champions.Viktor
             }
         }
 
+        public override void LastHit()
+        {
+        }
+
         public override void LaneClear()
         {
             if (LaneClearMenu.CheckBoxValue(SpellSlot.E) && E.IsReady())

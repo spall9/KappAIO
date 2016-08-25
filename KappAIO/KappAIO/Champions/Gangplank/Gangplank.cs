@@ -74,6 +74,7 @@ namespace KappAIO.Champions.Gangplank
             AutoMenu.CreateKeyBind("EQMOUSE", "E > Q To Mouse", false, KeyBind.BindTypes.HoldActive, 'S');
             ComboMenu.CreateSlider("RAOE", "R AoE Hit {0}", 3, 1, 6);
             KillStealMenu.CreateSlider("Rdmg", "Multipy R Damage By X{0}", 3, 1, 12);
+            LaneClearMenu.CreateCheckBox("QLH", "LastHit Mode Q");
             LaneClearMenu.CreateSlider("EKill", "Minions Kill Count {0}", 2, 0, 10);
             LaneClearMenu.CreateSlider("EHits", "Minions To Hit With E {0}", 3, 0, 10);
             DrawMenu.CreateCheckBox("Barrels", "Enable Barrels Drawings");
@@ -184,10 +185,9 @@ namespace KappAIO.Champions.Gangplank
             var pred = target.PrediectPosition((int)QTravelTime(target));
             var castpos = E.GetPrediction(target).CastPosition;
 
-            Orbwalker.ForcedTarget = AABarrel(target);
-
             if (AABarrel(target) != null)
             {
+                Orbwalker.ForcedTarget = AABarrel(target);
                 if (E.IsReady() && ComboMenu.CheckBoxValue(SpellSlot.E))
                 {
                     if (BarrelsList.Count(b => b.Barrel.Distance(user) <= Q.Range) > 0 && BarrelsList.Count(b => b.Barrel.Distance(castpos) <= E.Width) < 0)
@@ -266,7 +266,7 @@ namespace KappAIO.Champions.Gangplank
                         {
                             if (E.Handle.Ammo > 1)
                             {
-                                if (HPTiming() <= 1000 || target.IsCC())
+                                if ((HPTiming() <= 1000 || target.IsCC()) && target.Distance(user) < Q.Range)
                                 {
                                     E.Cast(castpos);
                                 }
@@ -296,10 +296,46 @@ namespace KappAIO.Champions.Gangplank
         {
         }
 
+        public override void LastHit()
+        {
+            if (LaneClearMenu.CheckBoxValue("QLH") && Q.IsReady())
+            {
+                var barrel = BarrelsList.OrderByDescending(b => b.Barrel.CountEnemyMinionsInRange(E.Width)).FirstOrDefault(m => KillableBarrel(m) != null && m.Barrel.CountEnemyMinionsInRange(E.Width) > 0 && (KillableBarrel(m).IsValidTarget(Q.Range) || KillableBarrel(m).IsInRange(user, user.GetAutoAttackRange())));
+                if (barrel != null)
+                {
+                    var EkillMinions = EntityManager.MinionsAndMonsters.EnemyMinions.Count(m => BarrelKill(m) && BarrelsList.Any(b => b.Barrel.IsInRange(m, E.Width)) && m.IsValidTarget())
+                                       >= LaneClearMenu.SliderValue("EKill");
+                    var EHitMinions = EntityManager.MinionsAndMonsters.EnemyMinions.Count(m => BarrelsList.Any(b => b.Barrel.IsInRange(m, E.Width)) && m.IsValidTarget())
+                                       >= LaneClearMenu.SliderValue("EHits");
+                    if (KillableBarrel(barrel).IsValidTarget(user.GetAutoAttackRange()))
+                    {
+                        Orbwalker.ForcedTarget = KillableBarrel(barrel);
+                    }
+                    else
+                    {
+                        if (KillableBarrel(barrel).IsValidTarget(Q.Range) && (EkillMinions || EHitMinions))
+                        {
+                            Q.Cast(barrel.Barrel);
+                        }
+                    }
+                }
+                else
+                {
+                    if (LaneClearMenu.CompareSlider("Qmana", user.ManaPercent))
+                    {
+                        foreach (var minion in EntityManager.MinionsAndMonsters.EnemyMinions.OrderByDescending(m => m.Distance(user)).Where(m => m.IsKillable(Q.Range) && Q.WillKill(m) && !BarrelsList.Any(b => b.Barrel.Distance(m) <= E.Width)))
+                        {
+                            Q.Cast(minion);
+                        }
+                    }
+                }
+            }
+        }
+
         public override void LaneClear()
         {
             Orbwalker.ForcedTarget = null;
-            if (Q.IsReady() && LaneClearMenu.CompareSlider("Qmana", user.ManaPercent))
+            if (Q.IsReady())
             {
                 if (E.IsReady() && LaneClearMenu.CheckBoxValue(SpellSlot.E))
                 {
@@ -340,9 +376,12 @@ namespace KappAIO.Champions.Gangplank
                     }
                     else
                     {
-                        foreach (var minion in EntityManager.MinionsAndMonsters.EnemyMinions.OrderByDescending(m => m.Distance(user)).Where(m => m.IsKillable(Q.Range) && Q.WillKill(m) && !BarrelsList.Any(b => b.Barrel.Distance(m) <= E.Width)))
+                        if (LaneClearMenu.CompareSlider("Qmana", user.ManaPercent))
                         {
-                            Q.Cast(minion);
+                            foreach (var minion in EntityManager.MinionsAndMonsters.EnemyMinions.OrderByDescending(m => m.Distance(user)).Where(m => m.IsKillable(Q.Range) && Q.WillKill(m) && !BarrelsList.Any(b => b.Barrel.Distance(m) <= E.Width)))
+                            {
+                                Q.Cast(minion);
+                            }
                         }
                     }
                 }

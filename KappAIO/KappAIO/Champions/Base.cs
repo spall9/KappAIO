@@ -16,6 +16,7 @@ namespace KappAIO.Champions
         public abstract void Combo();
         public abstract void Flee();
         public abstract void Harass();
+        public abstract void LastHit();
         public abstract void LaneClear();
         public abstract void JungleClear();
         public abstract void KillSteal();
@@ -43,6 +44,7 @@ namespace KappAIO.Champions
             if (activemode.HasFlag(Orbwalker.ActiveModes.Combo)) this.Combo();
             if (activemode.HasFlag(Orbwalker.ActiveModes.Harass)) this.Harass();
             if (activemode.HasFlag(Orbwalker.ActiveModes.LaneClear)) this.LaneClear();
+            if (activemode.HasFlag(Orbwalker.ActiveModes.LastHit)) this.LastHit();
             if (activemode.HasFlag(Orbwalker.ActiveModes.JungleClear)) this.JungleClear();
             if (activemode.HasFlag(Orbwalker.ActiveModes.Flee)) this.Flee();
         }

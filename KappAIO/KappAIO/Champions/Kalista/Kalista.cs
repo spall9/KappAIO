@@ -216,6 +216,10 @@ namespace KappAIO.Champions.Kalista
             }
         }
 
+        public override void LastHit()
+        {
+        }
+
         public override void LaneClear()
         {
             if (E.IsReady() && LaneClearMenu.CheckBoxValue(SpellSlot.E) && LaneClearMenu.CompareSlider("Emana", user.ManaPercent) && LaneClearMenu.CompareSlider("Ekills", EntityManager.MinionsAndMonsters.EnemyMinions.Count(e => e.IsKillable(E.Range) && e.EKill())))

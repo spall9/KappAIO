@@ -86,7 +86,6 @@ namespace KappAIO.Common
                     OnIncomingDamage?.Invoke(new InComingDamageEventArgs(caster, target, caster.GetSpellDamage(target, args.Slot), InComingDamageEventArgs.Type.TargetedSpell));
                 }
             };
-
         }
     }
 }
