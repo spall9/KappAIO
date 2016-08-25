@@ -142,14 +142,12 @@ namespace KappAIO.Common
                                 if (target == null)
                                 {
                                     Player.CastSpell(spell.Slot, p.To3D());
-                                    Chat.Print("Casted AOE");
                                 }
                                 else
                                 {
                                     if (target.ServerPosition.IsInRange(p.To3D(), spell.Width))
                                     {
                                         Player.CastSpell(spell.Slot, p.To3D());
-                                        Chat.Print("Casted AOE");
                                     }
                                 }
                             }
