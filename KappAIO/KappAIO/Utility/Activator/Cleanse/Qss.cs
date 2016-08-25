@@ -23,20 +23,6 @@ namespace KappAIO.Utility.Activator.Cleanse
             BuffType.Suppression, BuffType.Taunt
         };
 
-        private class SaveBuffs
-        {
-            public readonly AIHeroClient Owner;
-            public readonly BuffType buff;
-
-            public SaveBuffs(AIHeroClient owner, BuffType type)
-            {
-                this.Owner = owner;
-                this.buff = type;
-            }
-        }
-
-        private static readonly List<SaveBuffs> SavedBuffs = new List<SaveBuffs>();
-
         private static Menu Clean;
 
         public static void Init()
@@ -45,6 +31,12 @@ namespace KappAIO.Utility.Activator.Cleanse
             {
                 Clean = Load.MenuIni.AddSubMenu("Qss");
                 Clean.CreateCheckBox("ally", "Qss Allies");
+                if (Player.Instance.Hero == Champion.Gangplank)
+                {
+                    Clean.AddSeparator(0);
+                    Clean.AddGroupLabel("Spells");
+                    Clean.CreateCheckBox("W", "Use Gangplank W");
+                }
                 Clean.AddSeparator(0);
                 Clean.AddGroupLabel("Items");
                 Clean.CreateCheckBox("Cleanse", "Use Summoner Cleanse");
@@ -55,8 +47,6 @@ namespace KappAIO.Utility.Activator.Cleanse
                 BuffsToQss.ForEach(b => Clean.CreateCheckBox(b.ToString(), "Use On " + b));
 
                 Game.OnTick += Game_OnTick;
-                Obj_AI_Base.OnBuffGain += Obj_AI_Base_OnBuffGain;
-                Obj_AI_Base.OnBuffLose += Obj_AI_Base_OnBuffLose;
             }
             catch (Exception ex)
             {
@@ -68,13 +58,16 @@ namespace KappAIO.Utility.Activator.Cleanse
         {
             try
             {
-                SavedBuffs.RemoveAll(b => b.Owner.IsDead);
-
                 if (Player.Instance.IsDead)return;
 
-                foreach (var saved in SavedBuffs.Where(a => a.Owner != null && Clean.CheckBoxValue(a.buff.ToString()) && a.Owner.IsKillable()))
+                foreach (var ally in EntityManager.Heroes.Allies.Where(a => a.IsKillable() && a.Buffs.Any(b => BuffsToQss.Contains(b.Type) && Clean.CheckBoxValue(b.Type.ToString()))))
                 {
-                    CastQss(saved.Owner);
+                    if (Player.Instance.Hero == Champion.Gangplank && ally.IsMe && Player.GetSpell(SpellSlot.W).IsReady && Player.GetSpell(SpellSlot.W).IsLearned && Clean.CheckBoxValue("W"))
+                    {
+                        Player.CastSpell(SpellSlot.W);
+                        return;
+                    }
+                    CastQss(ally);
                     return;
                 }
             }
@@ -113,36 +106,6 @@ namespace KappAIO.Utility.Activator.Cleanse
             catch (Exception ex)
             {
                 Logger.Send("Activator Qss Error At CastQss", ex, Logger.LogLevel.Error);
-            }
-        }
-
-        private static void Obj_AI_Base_OnBuffLose(Obj_AI_Base sender, Obj_AI_BaseBuffLoseEventArgs args)
-        {
-            try
-            {
-                var caster = sender as AIHeroClient;
-                if (caster == null || !caster.IsAlly || !BuffsToQss.Contains(args.Buff.Type))
-                    return;
-                SavedBuffs.Remove(new SaveBuffs(caster, args.Buff.Type));
-            }
-            catch (Exception ex)
-            {
-                Logger.Send("Activator Qss Error At Obj_AI_Base_OnBuffLose", ex, Logger.LogLevel.Error);
-            }
-        }
-
-        private static void Obj_AI_Base_OnBuffGain(Obj_AI_Base sender, Obj_AI_BaseBuffGainEventArgs args)
-        {
-            try
-            {
-                var caster = sender as AIHeroClient;
-                if (caster == null || !caster.IsAlly || !BuffsToQss.Contains(args.Buff.Type))
-                    return;
-                SavedBuffs.Add(new SaveBuffs(caster, args.Buff.Type));
-            }
-            catch (Exception ex)
-            {
-                Logger.Send("Activator Qss Error At Obj_AI_Base_OnBuffGain", ex, Logger.LogLevel.Error);
             }
         }
     }

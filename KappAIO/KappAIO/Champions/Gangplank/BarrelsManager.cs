@@ -48,7 +48,7 @@ namespace KappAIO.Champions.Gangplank
                     BarrelsList.Add(newbarrel);
                 }
             }
-            BarrelsList.RemoveAll(b => b.Barrel.IsDead || !b.Barrel.IsValid || b.Barrel.Health <= 0);
+            BarrelsList.RemoveAll(b => b?.Barrel == null || b.Barrel.IsDead || !b.Barrel.IsValid || b.Barrel.Health <= 0);
         }
 
         internal class Barrels
@@ -93,7 +93,7 @@ namespace KappAIO.Champions.Gangplank
 
         internal static float QTravelTime(Obj_AI_Base Target)
         {
-            return Player.Instance.Distance(Target) / (Player.Instance.Crit < 0.05f ? 2600f : 3000f) * 1000 + 300;
+            return Player.Instance.Distance(Target) / (Player.Instance.Crit < 0.05f ? 2600f : 3000f) * 1000 + 250 + Game.Ping / 2f;
         }
 
         internal static Obj_AI_Minion AABarrel(Obj_AI_Base target)

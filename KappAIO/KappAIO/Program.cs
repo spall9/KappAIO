@@ -19,12 +19,12 @@ namespace KappAIO
 
         private static void Loading_OnLoadingComplete(EventArgs args)
         {
+            KappaEvade.Init();
+            Events.Init();
+            Utility.Activator.Load.Init();
             if (!SupportedHeros.Contains(Player.Instance.Hero)) return;
             var Instance = (Base)Activator.CreateInstance(null, "KappAIO.Champions." + Player.Instance.Hero + "." + Player.Instance.Hero).Unwrap();
-            KappaEvade.Init();
             CheckVersion.Init();
-            Utility.Activator.Load.Init();
-            Events.Init();
         }
     }
 }

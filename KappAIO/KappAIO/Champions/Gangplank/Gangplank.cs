@@ -31,8 +31,8 @@ namespace KappAIO.Champions.Gangplank
 
             Q = new Spell.Targeted(SpellSlot.Q, 625);
             W = new Spell.Active(SpellSlot.W);
-            E = new Spell.Skillshot(SpellSlot.E, 1000, SkillShotType.Circular, 250, int.MaxValue, 325);
-            R = new Spell.Skillshot(SpellSlot.R, int.MaxValue, SkillShotType.Circular, 250, int.MaxValue, 600);
+            E = new Spell.Skillshot(SpellSlot.E, 1000, SkillShotType.Circular, 500, int.MaxValue, 325);
+            R = new Spell.Skillshot(SpellSlot.R, int.MaxValue, SkillShotType.Circular, 500, int.MaxValue, 600);
 
             MenuIni = MainMenu.AddMenu(MenuName, MenuName);
             AutoMenu = MenuIni.AddSubMenu("Auto");
@@ -69,7 +69,8 @@ namespace KappAIO.Champions.Gangplank
                     KillStealMenu.CreateCheckBox(i.Slot, i.Slot + " KillSteal");
                 });
 
-            AutoMenu.CreateCheckBox("CC", "Auto W CC Buffs");
+            MenuIni.AddGroupLabel("For W CC Cleaner Check Activator > Qss");
+            //AutoMenu.CreateCheckBox("CC", "Auto W CC Buffs");
             AutoMenu.CreateCheckBox("Qunk", "Auto Q UnKillable Minions");
             AutoMenu.CreateKeyBind("EQMOUSE", "E > Q To Mouse", false, KeyBind.BindTypes.HoldActive, 'S');
             ComboMenu.CreateSlider("RAOE", "R AoE Hit {0}", 3, 1, 6);
@@ -161,10 +162,6 @@ namespace KappAIO.Champions.Gangplank
                         }
                     }
                 }
-            }
-            if (user.IsCC() && W.IsReady() && AutoMenu.CheckBoxValue("CC"))
-            {
-                W.Cast();
             }
         }
 
@@ -446,7 +443,7 @@ namespace KappAIO.Champions.Gangplank
         {
             if (AutoMenu.KeyBindValue("EQMOUSE") && BarrelsList.Count(b => b.Barrel.IsValidTarget(Q.Range)) < 1)
             {
-                Drawing.DrawText(Game.CursorPos.WorldToScreen().X + 50, Game.CursorPos.WorldToScreen().Y, System.Drawing.Color.AliceBlue, "THERE ARE NO BARRELS NEARBY", 15);
+                Drawing.DrawText(Game.CursorPos.WorldToScreen().X + 50, Game.CursorPos.WorldToScreen().Y, System.Drawing.Color.AliceBlue, "THERE ARE NO BARRELS NEARBY TRY TO CREATE ONE", 15);
             }
 
             if (DrawMenu.CheckBoxValue("Barrels"))
@@ -462,7 +459,7 @@ namespace KappAIO.Champions.Gangplank
                     }
                     if (KillableBarrel(A) != null)
                     {
-                        Circle.Draw(EntityManager.Heroes.Enemies.Any(e => e.Distance(A.Barrel) <= E.Width) ? Color.Red : Color.AliceBlue, 325, KillableBarrel(A));
+                        Circle.Draw(EntityManager.Heroes.Enemies.Any(e => e.Distance(A.Barrel) <= E.Width && e.IsKillable()) ? Color.Red : Color.AliceBlue, 325, KillableBarrel(A));
                     }
                 }
             }

@@ -18,10 +18,21 @@ namespace KappAIO.Utility.Activator.Spells
             SummMenu.CreateSlider("allyhp", "Ally HealthPercent {0}% To Use Heal", 30);
             SummMenu.AddSeparator(0);
             SummMenu.AddGroupLabel("Self");
+            SummMenu.CreateCheckBox("ignite", "Use Ignite");
             SummMenu.CreateCheckBox("me", "Use Heal For Self");
             SummMenu.CreateSlider("hp", "HealthPercent {0}% To Use Heal For ME", 30);
 
             Events.OnIncomingDamage += Events_OnIncomingDamage;
+            Game.OnTick += Game_OnTick;
+        }
+
+        private static void Game_OnTick(System.EventArgs args)
+        {
+            var target = TargetSelector.GetTarget(600, DamageType.True);
+            if (target != null && target.IsKillable(600) && target.CountEnemiesInRange(1000) >= target.CountAlliesInRange(1000) && Player.Instance.GetSummonerSpellDamage(target, DamageLibrary.SummonerSpells.Ignite) >= target.TotalShieldHealth() && Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.Combo) && SummonerSpells.Ignite.IsReady() && SummMenu.CheckBoxValue("ignite"))
+            {
+                SummonerSpells.Ignite.Cast(target);
+            }
         }
 
         private static void Events_OnIncomingDamage(Events.InComingDamageEventArgs args)
