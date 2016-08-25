@@ -135,7 +135,7 @@ namespace KappAIO.Common
                     foreach (var point in circle.Points)
                     {
                         circle = new Geometry.Polygon.Circle(point, spell.Width);
-                        foreach (var p in circle.Points.OrderBy(a => a.Distance(enemy)))
+                        foreach (var p in circle.Points.OrderBy(a => a.Distance(pred.CastPosition)))
                         {
                             if (p.CountEnemiesInRange(spell.Width) >= hitcount)
                             {

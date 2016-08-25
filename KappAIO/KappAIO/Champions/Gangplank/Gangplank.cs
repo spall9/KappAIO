@@ -378,7 +378,7 @@ namespace KappAIO.Champions.Gangplank
                 }
                 if (R.IsReady() && enemy.Distance(user) >= Q.Range + 1000 && KillStealMenu.CheckBoxValue(SpellSlot.R) && R.WillKill(enemy, KillStealMenu.SliderValue("Rdmg"), Rdamage(enemy)))
                 {
-                    Player.CastSpell(R.Slot, enemy.ServerPosition);
+                    Player.CastSpell(R.Slot, R.GetPrediction(enemy).CastPosition);
                 }
                 if (KillStealMenu.CheckBoxValue(SpellSlot.E))
                 {
