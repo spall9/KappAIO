@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using EloBuddy;
 using EloBuddy.SDK;
@@ -59,7 +60,17 @@ namespace KappAIO.Common
         /// </summary>
         public static bool IsCC(this Obj_AI_Base target)
         {
-            return !target.CanMove || target.HasBuffOfType(BuffType.Charm) || target.HasBuffOfType(BuffType.Knockback) || target.HasBuffOfType(BuffType.Knockup) || target.HasBuffOfType(BuffType.Fear)
+            return (!target.CanMove && !target.IsMe) || target.HasBuffOfType(BuffType.Charm) || target.HasBuffOfType(BuffType.Knockback) || target.HasBuffOfType(BuffType.Knockup) || target.HasBuffOfType(BuffType.Fear)
+                   || target.HasBuffOfType(BuffType.Snare) || target.HasBuffOfType(BuffType.Stun) || target.HasBuffOfType(BuffType.Suppression) || target.HasBuffOfType(BuffType.Taunt)
+                   || target.HasBuffOfType(BuffType.Sleep);
+        }
+
+        /// <summary>
+        ///     Returns true if target Is CC'D.
+        /// </summary>
+        public static bool IsCC(this AIHeroClient target)
+        {
+            return ((!target.CanMove || target.IsRecalling()) && !target.IsMe) || target.HasBuffOfType(BuffType.Charm) || target.HasBuffOfType(BuffType.Knockback) || target.HasBuffOfType(BuffType.Knockup) || target.HasBuffOfType(BuffType.Fear)
                    || target.HasBuffOfType(BuffType.Snare) || target.HasBuffOfType(BuffType.Stun) || target.HasBuffOfType(BuffType.Suppression) || target.HasBuffOfType(BuffType.Taunt)
                    || target.HasBuffOfType(BuffType.Sleep);
         }
@@ -110,6 +121,45 @@ namespace KappAIO.Common
         }
 
         /// <summary>
+        ///     Attemtps To Cast the spell AoE.
+        /// </summary>
+        public static void CastAOE(this Spell.Skillshot spell, int hitcount, float CustomRange = -1, AIHeroClient target = null)
+        {
+            var range = CustomRange.Equals(-1) ? spell.Range : CustomRange;
+            if (spell.Type == SkillShotType.Circular)
+            {
+                foreach (var enemy in EntityManager.Heroes.Enemies.Where(e => e.IsKillable(range)))
+                {
+                    var pred = spell.GetPrediction(enemy);
+                    var circle = new Geometry.Polygon.Circle(pred.CastPosition, spell.Width);
+                    foreach (var point in circle.Points)
+                    {
+                        circle = new Geometry.Polygon.Circle(point, spell.Width);
+                        foreach (var p in circle.Points.OrderBy(a => a.Distance(enemy)))
+                        {
+                            if (p.CountEnemiesInRange(spell.Width) >= hitcount)
+                            {
+                                if (target == null)
+                                {
+                                    Player.CastSpell(spell.Slot, p.To3D());
+                                    Chat.Print("Casted AOE");
+                                }
+                                else
+                                {
+                                    if (target.ServerPosition.IsInRange(p.To3D(), spell.Width))
+                                    {
+                                        Player.CastSpell(spell.Slot, p.To3D());
+                                        Chat.Print("Casted AOE");
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         ///     Creates a checkbox.
         /// </summary>
         public static CheckBox CreateCheckBox(this Menu m, string id, string name, bool defaultvalue = true)
@@ -131,6 +181,22 @@ namespace KappAIO.Common
         public static Slider CreateSlider(this Menu m, string id, string name, int defaultvalue = 0, int MinValue = 0, int MaxValue = 100)
         {
             return m.Add(id, new Slider(name, defaultvalue, MinValue, MaxValue));
+        }
+
+        /// <summary>
+        ///     Creates a KeyBind.
+        /// </summary>
+        public static KeyBind CreateKeyBind(this Menu m, string id, string name, bool defaultvalue, KeyBind.BindTypes BindType, uint key1 = 27U, uint key2 = 27U)
+        {
+            return m.Add(id, new KeyBind(name, defaultvalue, BindType, key1, key2));
+        }
+
+        /// <summary>
+        ///     Returns KeyBind Value.
+        /// </summary>
+        public static bool KeyBindValue(this Menu m, string id)
+        {
+            return m[id].Cast<KeyBind>().CurrentValue;
         }
 
         /// <summary>
@@ -168,9 +234,9 @@ namespace KappAIO.Common
         /// <summary>
         ///     Returns true if the spell will kill the target.
         /// </summary>
-        public static bool WillKill(this Spell.SpellBase spell, Obj_AI_Base target, float MultiplyDmgBy = 1)
+        public static bool WillKill(this Spell.SpellBase spell, Obj_AI_Base target, float MultiplyDmgBy = 1, float ExtraDamage = 0, DamageType ExtraDamageType = DamageType.True)
         {
-            return Player.Instance.GetSpellDamage(target, spell.Slot) * MultiplyDmgBy >= Prediction.Health.GetPrediction(target, (int)(spell.CastDelay + (Player.Instance.Distance(target) / spell.Handle.SData.MissileSpeed) * 1000));
+            return Player.Instance.GetSpellDamage(target, spell.Slot) * MultiplyDmgBy + Player.Instance.CalculateDamageOnUnit(target, ExtraDamageType, ExtraDamage) >= Prediction.Health.GetPrediction(target, spell.CastDelay + Game.Ping / 2);
         }
 
         /// <summary>

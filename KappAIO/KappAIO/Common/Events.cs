@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Linq;
 using EloBuddy;
 using EloBuddy.SDK;
 using EloBuddy.SDK.Constants;
@@ -35,10 +31,10 @@ namespace KappAIO.Common
             }
             public InComingDamageEventArgs(Obj_AI_Base sender, AIHeroClient target, float Damage, Type type)
             {
-                Sender = sender;
-                Target = target;
-                InComingDamage = Damage;
-                DamageType = type;
+                this.Sender = sender;
+                this.Target = target;
+                this.InComingDamage = Damage;
+                this.DamageType = type;
             }
         }
 
