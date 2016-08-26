@@ -93,14 +93,14 @@ namespace KappAIO.Champions.Viktor
 
         private static void Gapcloser_OnGapcloser(AIHeroClient sender, Gapcloser.GapcloserEventArgs e)
         {
-            if (sender == null || !sender.IsKillable() || e.End.Distance(user) > W.Range || !AutoMenu.CheckBoxValue("GapW") || !W.IsReady()) return;
+            if (sender == null || !sender.IsEnemy || !sender.IsKillable() || e.End.Distance(user) > W.Range || !AutoMenu.CheckBoxValue("GapW") || !W.IsReady()) return;
 
             W.Cast(AutoMenu["Wmode"].Cast<ComboBox>().CurrentValue == 0 ? user : sender);
         }
 
         private static void Interrupter_OnInterruptableSpell(Obj_AI_Base sender, Interrupter.InterruptableSpellEventArgs e)
         {
-            if(sender == null || !sender.IsKillable()) return;
+            if(sender == null || !sender.IsEnemy || !sender.IsKillable()) return;
 
             if (sender.IsKillable(W.Range) && AutoMenu.CheckBoxValue("IntW") && W.IsReady())
             {
