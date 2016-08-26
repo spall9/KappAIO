@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using EloBuddy;
 using EloBuddy.SDK.Events;
 using KappAIO.Champions;
-using KappAIO.Common;
-using KappAIO.Common.KappaEvade;
 
 namespace KappAIO
 {
@@ -19,9 +17,7 @@ namespace KappAIO
 
         private static void Loading_OnLoadingComplete(EventArgs args)
         {
-            KappaEvade.Init();
-            Events.Init();
-            Utility.Activator.Load.Init();
+            Utility.Load.Init();
             if (!SupportedHeros.Contains(Player.Instance.Hero)) return;
             var Instance = (Base)Activator.CreateInstance(null, "KappAIO.Champions." + Player.Instance.Hero + "." + Player.Instance.Hero).Unwrap();
             CheckVersion.Init();

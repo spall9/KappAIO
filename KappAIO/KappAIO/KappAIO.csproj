@@ -81,6 +81,8 @@
     <Compile Include="Utility\Activator\Items\Potions.cs" />
     <Compile Include="Utility\Activator\Spells\Summoners.cs" />
     <Compile Include="Utility\Activator\Load.cs" />
+    <Compile Include="Utility\Load.cs" />
+    <Compile Include="Utility\Tracker\Ganks.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

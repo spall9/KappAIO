@@ -74,11 +74,16 @@ namespace KappAIO.Champions.Gangplank
             AutoMenu.CreateCheckBox("AutoQ", "Auto Q Barrels", false);
             AutoMenu.CreateCheckBox("Qunk", "Auto Q UnKillable Minions");
             AutoMenu.CreateKeyBind("EQMOUSE", "E > Q To Mouse", false, KeyBind.BindTypes.HoldActive, 'S');
+
+            ComboMenu.CreateCheckBox("FB", "Place First Barrel");
             ComboMenu.CreateSlider("RAOE", "R AoE Hit {0}", 3, 1, 6);
+
             KillStealMenu.CreateSlider("Rdmg", "Multipy R Damage By X{0}", 3, 1, 12);
+
             LaneClearMenu.CreateCheckBox("QLH", "LastHit Mode Q");
             LaneClearMenu.CreateSlider("EKill", "Minions Kill Count {0}", 2, 0, 10);
             LaneClearMenu.CreateSlider("EHits", "Minions To Hit With E {0}", 3, 0, 10);
+
             DrawMenu.CreateCheckBox("Barrels", "Enable Barrels Drawings");
 
             Orbwalker.OnUnkillableMinion += Orbwalker_OnUnkillableMinion;
@@ -233,7 +238,7 @@ namespace KappAIO.Champions.Gangplank
             {
                 if (ComboMenu.CheckBoxValue(SpellSlot.Q))
                 {
-                    if (((BarrelsList.Count(b => b.Barrel.IsInRange(target, E.Radius + ConnectionRange)) < 1 && !E.IsReady()) || Q.WillKill(target)) && target.IsKillable(Q.Range))
+                    if (((BarrelsList.Count(b => b.Barrel.IsInRange(target, E.Radius + ConnectionRange)) < 1 && (!E.IsReady() || E.Handle.Ammo < 1)) || Q.WillKill(target)) && target.IsKillable(Q.Range))
                     {
                         Q.Cast(target);
                     }
@@ -294,11 +299,21 @@ namespace KappAIO.Champions.Gangplank
                         }
                         else
                         {
-                            if (E.Handle.Ammo > 1)
+                            if (E.Handle.Ammo > 1 && ComboMenu.CheckBoxValue("FB"))
                             {
-                                if ((HPTiming() <= 1000 || target.IsCC()) && target.Distance(user) < Q.Range)
+                                if (Q.IsInRange(castpos))
                                 {
-                                    E.Cast(castpos);
+                                    if (HPTiming() <= 1000 || target.IsCC())
+                                    {
+                                        E.Cast(castpos);
+                                    }
+                                }
+                                else
+                                {
+                                    if (E.IsInRange(castpos))
+                                    {
+                                        E.Cast(castpos.Extend(user, ConnectionRange - 150).To3D());
+                                    }
                                 }
 
                                 var circle = new Geometry.Polygon.Circle(castpos, ConnectionRange);
@@ -335,15 +350,13 @@ namespace KappAIO.Champions.Gangplank
                 {
                     var EkillMinions = EntityManager.MinionsAndMonsters.EnemyMinions.Count(m => BarrelKill(m) && BarrelsList.Any(b => b.Barrel.IsInRange(m, E.Width)) && m.IsValidTarget())
                                        >= LaneClearMenu.SliderValue("EKill");
-                    var EHitMinions = EntityManager.MinionsAndMonsters.EnemyMinions.Count(m => BarrelsList.Any(b => b.Barrel.IsInRange(m, E.Width)) && m.IsValidTarget())
-                                       >= LaneClearMenu.SliderValue("EHits");
                     if (KillableBarrel(barrel).IsValidTarget(user.GetAutoAttackRange()))
                     {
                         Orbwalker.ForcedTarget = KillableBarrel(barrel);
                     }
                     else
                     {
-                        if (KillableBarrel(barrel).IsValidTarget(Q.Range) && (EkillMinions || EHitMinions))
+                        if (KillableBarrel(barrel).IsValidTarget(Q.Range) && EkillMinions)
                         {
                             Q.Cast(barrel.Barrel);
                         }
