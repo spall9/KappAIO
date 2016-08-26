@@ -71,6 +71,7 @@ namespace KappAIO.Champions.Gangplank
 
             MenuIni.AddGroupLabel("For W CC Cleaner Check Activator > Qss");
             //AutoMenu.CreateCheckBox("CC", "Auto W CC Buffs");
+            AutoMenu.CreateCheckBox("AutoQ", "Auto Q Barrels", false);
             AutoMenu.CreateCheckBox("Qunk", "Auto Q UnKillable Minions");
             AutoMenu.CreateKeyBind("EQMOUSE", "E > Q To Mouse", false, KeyBind.BindTypes.HoldActive, 'S');
             ComboMenu.CreateSlider("RAOE", "R AoE Hit {0}", 3, 1, 6);
@@ -159,6 +160,38 @@ namespace KappAIO.Champions.Gangplank
                         if (castpos.IsInRange(target, E.Width) && E.IsInRange(castpos))
                         {
                             Q.Cast(targetedbarrel.Barrel);
+                        }
+                    }
+                }
+            }
+
+            if (AutoMenu.CheckBoxValue("AutoQ") && Q.IsReady())
+            {
+                var target =
+                    EntityManager.Heroes.Enemies.OrderByDescending(TargetSelector.GetPriority).FirstOrDefault(e => e.IsKillable() &&
+                    BarrelsList.Any(b => b.Barrel.IsValidTarget(Q.Range) && (KillableBarrel(b)?.Distance(e) <= E.Width || BarrelsList.Any(a => KillableBarrel(b)?.Distance(a.Barrel) <= ConnectionRange && e.Distance(b.Barrel) <= E.Width))))
+                    ?? TargetSelector.GetTarget(E.Range, DamageType.Physical);
+                if(target == null) return;
+                foreach (var A in BarrelsList.OrderBy(b => b.Barrel.Distance(target)))
+                {
+                    if (KillableBarrel(A) != null && KillableBarrel(A).IsValidTarget(Q.Range))
+                    {
+                        if (target.IsInRange(KillableBarrel(A), E.Width))
+                        {
+                            Q.Cast(KillableBarrel(A));
+                        }
+
+                        var Secondbarrel = BarrelsList.OrderBy(b => b.Barrel.Distance(target)).FirstOrDefault(b => b.Barrel.NetworkId != KillableBarrel(A).NetworkId && b.Barrel.Distance(KillableBarrel(A)) <= ConnectionRange);
+                        if (Secondbarrel != null)
+                        {
+                            if (target.IsInRange(Secondbarrel.Barrel, E.Width))
+                            {
+                                Q.Cast(KillableBarrel(A));
+                            }
+                            if (BarrelsList.OrderBy(b => b.Barrel.Distance(target)).Any(b => b.Barrel.NetworkId != Secondbarrel.Barrel.NetworkId && b.Barrel.Distance(Secondbarrel.Barrel) <= ConnectionRange && b.Barrel.CountEnemiesInRange(E.Width) > 0))
+                            {
+                                Q.Cast(KillableBarrel(A));
+                            }
                         }
                     }
                 }
