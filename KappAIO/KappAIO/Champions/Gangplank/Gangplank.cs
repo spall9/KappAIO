@@ -113,7 +113,7 @@ namespace KappAIO.Champions.Gangplank
                 if (args.Slot == SpellSlot.Q && E.IsReady())
                 {
                     var barrel = BarrelsList.FirstOrDefault(b => b.Barrel.NetworkId == args.Target.NetworkId);
-                    var Secondbarrel = BarrelsList.FirstOrDefault(b => b.Barrel.NetworkId != args.Target.NetworkId && b.Barrel.Distance(args.Target) <= ConnectionRange);
+                    var Secondbarrel = BarrelsList.FirstOrDefault(b => b.Barrel.NetworkId != barrel?.Barrel.NetworkId && b.Barrel.Distance(args.Target) <= ConnectionRange);
                     if (barrel != null)
                     {
                         startposition = Secondbarrel?.Barrel.ServerPosition ?? barrel.Barrel.ServerPosition;
@@ -124,7 +124,8 @@ namespace KappAIO.Champions.Gangplank
                         {
                             if (target.Distance(startposition) <= ConnectionRange + E.Radius && target.Distance(startposition) > E.Width - 75)
                             {
-                                position = target.Distance(startposition) < E.Radius + ConnectionRange ? E.GetPrediction(target).CastPosition : startposition.Extend(E.GetPrediction(target).CastPosition, ConnectionRange).To3D();
+                                var extended = startposition.Extend(E.GetPrediction(target).CastPosition, ConnectionRange).To3D();
+                                position = !E.IsInRange(extended) ? E.GetPrediction(target).CastPosition : extended;
                             }
                         }
                         else
@@ -132,9 +133,8 @@ namespace KappAIO.Champions.Gangplank
                             target = EntityManager.Heroes.Enemies.OrderBy(e => e.Distance(Game.CursorPos)).FirstOrDefault(e => e.IsKillable(E.Range));
                             if (target != null)
                             {
-                                position = target.IsInRange(startposition, ConnectionRange)
-                                                  ? E.GetPrediction(target).CastPosition
-                                                  : startposition.Extend(E.GetPrediction(target).CastPosition, ConnectionRange).To3D();
+                                var extended = startposition.Extend(E.GetPrediction(target).CastPosition, ConnectionRange).To3D();
+                                position = !E.IsInRange(extended) ? E.GetPrediction(target).CastPosition : extended;
                             }
                         }
                         if (position != Vector3.Zero)
@@ -222,10 +222,12 @@ namespace KappAIO.Champions.Gangplank
 
             if (AABarrel(target) != null)
             {
+                var extended = AABarrel(target).ServerPosition.Extend(pred, ConnectionRange).To3D();
+                castpos = !E.IsInRange(extended) ? pred : extended;
                 Orbwalker.ForcedTarget = AABarrel(target);
                 if (E.IsReady() && ComboMenu.CheckBoxValue(SpellSlot.E))
                 {
-                    if (BarrelsList.Count(b => b.Barrel.Distance(user) <= Q.Range) > 0 && BarrelsList.Count(b => b.Barrel.Distance(castpos) <= E.Width) < 0)
+                    if (BarrelsList.Count(b => b.Barrel.Distance(user) <= Q.Range) > 0 && BarrelsList.Count(b => b.Barrel.Distance(castpos) <= E.Width) < 1)
                     {
                         E.Cast(castpos);
                     }
@@ -283,13 +285,12 @@ namespace KappAIO.Champions.Gangplank
                             var targetbarrel = BarrelsList.OrderBy(b => b.Barrel.Distance(target)).FirstOrDefault(b => KillableBarrel(b) != null && (b.Barrel.IsValidTarget(Q.Range) || b.Barrel.IsValidTarget(user.GetAutoAttackRange())) && b.Barrel.IsInRange(target, E.Radius + ConnectionRange));
                             if (KillableBarrel(targetbarrel) != null)
                             {
-                                var Secondbarrel = BarrelsList.OrderBy(b => b.Barrel.Distance(target)).FirstOrDefault(b => b.Barrel.NetworkId != KillableBarrel(targetbarrel).NetworkId && b.Barrel.Distance(KillableBarrel(targetbarrel)) <= ConnectionRange);
+                                var Secondbarrel = BarrelsList.OrderBy(b => b.Barrel.Distance(target)).FirstOrDefault(b => b.Barrel.NetworkId != targetbarrel?.Barrel.NetworkId && b.Barrel.Distance(targetbarrel?.Barrel) <= ConnectionRange);
 
                                 if (Secondbarrel != null)
                                 {
-                                    castpos = target.IsInRange(Secondbarrel.Barrel, ConnectionRange + E.Radius)
-                                                      ? E.GetPrediction(target).CastPosition
-                                                      : Secondbarrel.Barrel.ServerPosition.Extend(E.GetPrediction(target).CastPosition, ConnectionRange).To3D();
+                                    var extended = Secondbarrel.Barrel.ServerPosition.Extend(pred, ConnectionRange).To3D();
+                                    castpos = !E.IsInRange(extended) ? pred : extended;
                                 }
                                 if ((castpos.Distance(KillableBarrel(targetbarrel)) <= ConnectionRange || Secondbarrel?.Barrel.Distance(castpos) <= ConnectionRange) && E.IsInRange(castpos))
                                 {
@@ -312,7 +313,7 @@ namespace KappAIO.Champions.Gangplank
                                 {
                                     if (E.IsInRange(castpos))
                                     {
-                                        E.Cast(castpos.Extend(user, ConnectionRange - 150).To3D());
+                                        E.Cast(castpos.Extend(user, ConnectionRange - 300).To3D());
                                     }
                                 }
 
@@ -460,7 +461,7 @@ namespace KappAIO.Champions.Gangplank
                 }
                 if (R.IsReady() && enemy.CountEnemiesInRange(1000) >= enemy.CountAlliesInRange(1000) && enemy.Distance(user) >= Q.Range + 1000 && KillStealMenu.CheckBoxValue(SpellSlot.R) && R.WillKill(enemy, KillStealMenu.SliderValue("Rdmg"), Rdamage(enemy)))
                 {
-                    Player.CastSpell(R.Slot, R.GetPrediction(enemy).CastPosition);
+                    R.CastAOE(1, R.Range);
                 }
                 if (KillStealMenu.CheckBoxValue(SpellSlot.E))
                 {
