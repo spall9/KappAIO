@@ -309,7 +309,7 @@ namespace KappAIO.Champions.Kalista
         {
             if (user.CountEnemiesInRange(user.GetAutoAttackRange()) < 1)
             {
-                Orbwalker.ForcedTarget = ObjectManager.Get<Obj_AI_Minion>().OrderBy(m => m.Distance(Game.CursorPos)).FirstOrDefault(m => !m.IsDead && m.Health > 0 && m.IsKillable(user.GetAutoAttackRange()));
+                Orbwalker.ForcedTarget = EntityManager.MinionsAndMonsters.CombinedAttackable.OrderBy(m => m.Distance(Game.CursorPos)).FirstOrDefault(m => !m.IsDead && m.Health > 0 && m.IsKillable(user.GetAutoAttackRange()));
             }
         }
 
