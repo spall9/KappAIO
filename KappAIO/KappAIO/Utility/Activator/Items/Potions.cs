@@ -29,7 +29,7 @@ namespace KappAIO.Utility.Activator.Items
                             PotionsMenu.CreateSlider(p.Id + "hp", p.ItemInfo.Name + " Health% {0}", 60);
                             PotionsMenu.AddSeparator(0);
                         });
-                Game.OnTick += Game_OnTick;
+                Events.OnIncomingDamage += Events_OnIncomingDamage;
             }
             catch (Exception ex)
             {
@@ -37,23 +37,18 @@ namespace KappAIO.Utility.Activator.Items
             }
         }
 
-        private static void Game_OnTick(EventArgs args)
+        private static void Events_OnIncomingDamage(Events.InComingDamageEventArgs args)
         {
-            try
+            if (args.Target == null || args.InComingDamage < 1 || args.Target.IsInFountainRange() || !args.Target.IsKillable() || !args.Target.IsMe)
+                return;
+
+            foreach (var pot in Pots.Where(p => p.ItemReady(PotionsMenu) && PotionsMenu.SliderValue(p.Id + "hp") >= Player.Instance.HealthPercent))
             {
-                if (Player.Instance.IsDead) return;
-                foreach (var pot in Pots.Where(p => p.ItemReady(PotionsMenu) && PotionsMenu.SliderValue(p.Id + "hp") >= Player.Instance.HealthPercent))
+                if (!Player.Instance.Buffs.Any(a => PotBuffs.Any(b => a.DisplayName.Equals(b))))
                 {
-                    if (!Player.Instance.Buffs.Any(a => PotBuffs.Any(b => a.DisplayName.Equals(b))))
-                    {
-                        pot.Cast();
-                        return;
-                    }
+                    pot.Cast();
+                    return;
                 }
-            }
-            catch (Exception ex)
-            {
-                Logger.Send("Activator Potions Error At Game_OnTick", ex, Logger.LogLevel.Error);
             }
         }
     }

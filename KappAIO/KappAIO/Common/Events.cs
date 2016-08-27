@@ -6,7 +6,7 @@ using KappAIO.Common.KappaEvade;
 
 namespace KappAIO.Common
 {
-    class Events
+    internal class Events
     {
         /// <summary>
         /// Fires when There is In Coming Damage to an ally
@@ -67,7 +67,7 @@ namespace KappAIO.Common
                 var turret = sender as Obj_AI_Turret;
                 var minion = sender as Obj_AI_Minion;
 
-                if (target == null || !target.IsAlly) return;
+                if (target == null || !target.IsAlly || !sender.IsEnemy) return;
 
                 if (hero != null)
                     OnIncomingDamage?.Invoke(new InComingDamageEventArgs(hero, target, hero.GetAutoAttackDamage(target), InComingDamageEventArgs.Type.HeroAttack));
