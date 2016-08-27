@@ -7,7 +7,7 @@ namespace KappAIO.Utility.Activator
 {
     internal class Load
     {
-        internal static Menu MenuIni;
+        internal static Menu MenuIni, DamageHandler;
 
         public static void Init()
         {
@@ -15,6 +15,14 @@ namespace KappAIO.Utility.Activator
             {
                 MenuIni = MainMenu.AddMenu("KappActivator", "KappActivator");
                 MenuIni.CreateCheckBox("Champ", "Load Only Activator", false);
+                DamageHandler = MenuIni.AddSubMenu("DamageHandler");
+                DamageHandler.CreateCheckBox("Minions", "Detect Minions Damage", false);
+                DamageHandler.CreateCheckBox("Heros", "Detect Heros Damage");
+                DamageHandler.CreateCheckBox("Turrets", "Detect Turrets Damage");
+                DamageHandler.CreateCheckBox("Minion", "Detect Minions Damage");
+                DamageHandler.CreateCheckBox("Skillshots", "Detect Skillshots Damage");
+                DamageHandler.CreateCheckBox("Targetedspells", "Detect Targetedspells Damage");
+                DamageHandler.CreateSlider("Mod", "InComing Damage Modifier {0}%", 100, 0, 200);
 
                 Items.Potions.Init();
                 Cleanse.Qss.Init();

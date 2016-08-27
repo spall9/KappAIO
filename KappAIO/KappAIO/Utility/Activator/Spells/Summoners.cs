@@ -15,12 +15,12 @@ namespace KappAIO.Utility.Activator.Spells
             SummMenu = Load.MenuIni.AddSubMenu("SummonerSpells");
             SummMenu.AddGroupLabel("Allies");
             SummMenu.CreateCheckBox("ally", "Use Heal For Allies");
-            SummMenu.CreateSlider("allyhp", "Ally HealthPercent {0}% To Use Heal", 30);
+            SummMenu.CreateSlider("allyhp", "Ally HP% {0}% To Use Heal", 30);
             SummMenu.AddSeparator(0);
             SummMenu.AddGroupLabel("Self");
             SummMenu.CreateCheckBox("ignite", "Use Ignite");
             SummMenu.CreateCheckBox("me", "Use Heal For Self");
-            SummMenu.CreateSlider("hp", "HealthPercent {0}% To Use Heal For ME", 30);
+            SummMenu.CreateSlider("hp", "Self HP% {0}% To Use Heal", 30);
 
             Events.OnIncomingDamage += Events_OnIncomingDamage;
             Game.OnTick += Game_OnTick;

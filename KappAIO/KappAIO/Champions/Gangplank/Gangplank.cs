@@ -120,7 +120,7 @@ namespace KappAIO.Champions.Gangplank
                     }
                     if (startposition != Vector3.Zero)
                     {
-                        if (target != null && target.IsKillable(E.Range + E.Width))
+                        if (target != null && target.IsKillable(E.Range + E.Radius))
                         {
                             if (target.Distance(startposition) <= ConnectionRange + E.Radius && target.Distance(startposition) > E.Width - 75)
                             {

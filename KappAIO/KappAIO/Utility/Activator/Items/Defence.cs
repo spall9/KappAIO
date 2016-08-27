@@ -19,13 +19,13 @@ namespace KappAIO.Utility.Activator.Items
                 Def.CreateCheckBox("ally", "Use For Allies");
                 Def.AddSeparator();
                 Def.CreateCheckBox(Zhonyas.Id.ToString(), "Use Zhonyas");
-                Def.CreateSlider(Zhonyas.Id + "hp", "Zhonyas Health% {0}", 30);
+                Def.CreateSlider(Zhonyas.Id + "hp", "Zhonyas HP% {0}%", 30);
                 Def.CreateCheckBox(Seraphs.Id.ToString(), "Use Seraphs");
-                Def.CreateSlider(Seraphs.Id + "hp", "Seraphs Health% {0}", 40);
+                Def.CreateSlider(Seraphs.Id + "hp", "Seraphs HP% {0}%", 40);
                 Def.CreateCheckBox(Solari.Id.ToString(), "Use Solari");
-                Def.CreateSlider(Solari.Id + "hp", "Solari Health% {0}", 50);
+                Def.CreateSlider(Solari.Id + "hp", "Solari HP% {0}%", 50);
                 Def.CreateCheckBox(Randuins.Id.ToString(), "Use Randuins");
-                Def.CreateSlider(Randuins.Id + "hp", "Randuins Health% {0}", 60);
+                Def.CreateSlider(Randuins.Id + "hp", "Randuins HP% {0}%", 60);
 
                 Events.OnIncomingDamage += Events_OnIncomingDamage;
                 Game.OnTick += Game_OnTick;

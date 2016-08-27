@@ -26,7 +26,7 @@ namespace KappAIO.Utility.Activator.Items
                     p =>
                         {
                             PotionsMenu.CreateCheckBox(p.Id.ToString(), "Use " + p.ItemInfo.Name);
-                            PotionsMenu.CreateSlider(p.Id + "hp", p.ItemInfo.Name + " Health% {0}", 60);
+                            PotionsMenu.CreateSlider(p.Id + "hp", p.ItemInfo.Name + " HP% {0}%", 60);
                             PotionsMenu.AddSeparator(0);
                         });
                 Events.OnIncomingDamage += Events_OnIncomingDamage;

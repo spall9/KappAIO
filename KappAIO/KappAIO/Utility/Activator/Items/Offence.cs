@@ -31,7 +31,7 @@ namespace KappAIO.Utility.Activator.Items
                     {
                         Offen.AddSeparator(0);
                         Offen.CreateCheckBox(i.Id.ToString(), "Use " + i.ItemInfo.Name);
-                        Offen.CreateSlider(i.Id + "hp", i.ItemInfo.Name + " Use on Health% {0}", 70);
+                        Offen.CreateSlider(i.Id + "hp", i.ItemInfo.Name + " Use on HP% {0}%", 70);
                         });
                 Orbwalker.OnPostAttack += Orbwalker_OnPostAttack;
                 Game.OnTick += Game_OnTick;

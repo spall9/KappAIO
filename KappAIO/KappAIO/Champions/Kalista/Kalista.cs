@@ -182,7 +182,10 @@ namespace KappAIO.Champions.Kalista
 
         public override void Combo()
         {
-            Gapclose();
+            if (ComboMenu.CheckBoxValue("Gapclose"))
+            {
+                Gapclose();
+            }
             if (ComboMenu.CompareSlider("EKillCount", EntityManager.Heroes.Enemies.Count(e => e.IsKillable(E.Range) && ComboMenu.CheckBoxValue(E.Slot) && e.EKill())) && E.IsReady())
             {
                 E.Cast();

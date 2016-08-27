@@ -3,6 +3,7 @@ using EloBuddy;
 using EloBuddy.SDK;
 using EloBuddy.SDK.Constants;
 using KappAIO.Common.KappaEvade;
+using static KappAIO.Utility.Activator.Load;
 
 namespace KappAIO.Common
 {
@@ -47,7 +48,7 @@ namespace KappAIO.Common
                 {
                     foreach (var ally in EntityManager.Heroes.Allies.Where(a => !a.IsDead && a.IsValidTarget() && a.IsInDanger(spell)))
                     {
-                        OnIncomingDamage?.Invoke(new InComingDamageEventArgs(spell.Caster, ally, spell.Caster.GetSpellDamage(ally, spell.spell.slot), InComingDamageEventArgs.Type.SkillShot));
+                        InvokeOnIncomingDamage(new InComingDamageEventArgs(spell.Caster, ally, spell.Caster.GetSpellDamage(ally, spell.spell.slot), InComingDamageEventArgs.Type.SkillShot));
                     }
                 }
             };
@@ -56,7 +57,7 @@ namespace KappAIO.Common
             {
                 // Used to Invoke the Incoming Damage Event When there is a TargetedSpell Incoming
                 if (target.IsAlly)
-                    OnIncomingDamage?.Invoke(new InComingDamageEventArgs(sender, target, sender.GetSpellDamage(target, spell.slot), InComingDamageEventArgs.Type.TargetedSpell));
+                    InvokeOnIncomingDamage(new InComingDamageEventArgs(sender, target, sender.GetSpellDamage(target, spell.slot), InComingDamageEventArgs.Type.TargetedSpell));
             };
 
             Obj_AI_Base.OnBasicAttack += delegate (Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
@@ -70,11 +71,11 @@ namespace KappAIO.Common
                 if (target == null || !target.IsAlly || !sender.IsEnemy) return;
 
                 if (hero != null)
-                    OnIncomingDamage?.Invoke(new InComingDamageEventArgs(hero, target, hero.GetAutoAttackDamage(target), InComingDamageEventArgs.Type.HeroAttack));
+                    InvokeOnIncomingDamage(new InComingDamageEventArgs(hero, target, hero.GetAutoAttackDamage(target, true), InComingDamageEventArgs.Type.HeroAttack));
                 if (turret != null)
-                    OnIncomingDamage?.Invoke(new InComingDamageEventArgs(turret, target, turret.GetAutoAttackDamage(target), InComingDamageEventArgs.Type.TurretAttack));
+                    InvokeOnIncomingDamage(new InComingDamageEventArgs(turret, target, turret.GetAutoAttackDamage(target, true), InComingDamageEventArgs.Type.TurretAttack));
                 if (minion != null)
-                    OnIncomingDamage?.Invoke(new InComingDamageEventArgs(minion, target, minion.GetAutoAttackDamage(target), InComingDamageEventArgs.Type.MinionAttack));
+                    InvokeOnIncomingDamage(new InComingDamageEventArgs(minion, target, minion.GetAutoAttackDamage(target, true), InComingDamageEventArgs.Type.MinionAttack));
             };
             Obj_AI_Base.OnProcessSpellCast += delegate (Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
             {
@@ -83,9 +84,19 @@ namespace KappAIO.Common
                 if (caster == null || target == null || !caster.IsEnemy || !target.IsAlly || args.IsAutoAttack()) return;
                 if (!Database.TargetedSpells.TargetedSpellsList.Any(s => s.hero == caster.Hero && s.slot == args.Slot))
                 {
-                    OnIncomingDamage?.Invoke(new InComingDamageEventArgs(caster, target, caster.GetSpellDamage(target, args.Slot), InComingDamageEventArgs.Type.TargetedSpell));
+                    InvokeOnIncomingDamage(new InComingDamageEventArgs(caster, target, caster.GetSpellDamage(target, args.Slot), InComingDamageEventArgs.Type.TargetedSpell));
                 }
             };
+        }
+
+        private static void InvokeOnIncomingDamage(InComingDamageEventArgs args)
+        {
+            if (args.DamageType == InComingDamageEventArgs.Type.HeroAttack && !DamageHandler.CheckBoxValue("Heros")) return;
+            if (args.DamageType == InComingDamageEventArgs.Type.MinionAttack && !DamageHandler.CheckBoxValue("Minions")) return;
+            if (args.DamageType == InComingDamageEventArgs.Type.TurretAttack && !DamageHandler.CheckBoxValue("Turrets")) return;
+            if (args.DamageType == InComingDamageEventArgs.Type.SkillShot && !DamageHandler.CheckBoxValue("Skillshots")) return;
+            if (args.DamageType == InComingDamageEventArgs.Type.TargetedSpell && !DamageHandler.CheckBoxValue("Targetedspells")) return;
+            OnIncomingDamage?.Invoke(new InComingDamageEventArgs(args.Sender, args.Target, args.InComingDamage * (DamageHandler.SliderValue("Mod") * 0.001f), args.DamageType));
         }
     }
 }

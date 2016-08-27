@@ -8,8 +8,8 @@ namespace KappAIO.Utility
         public static void Init()
         {
             KappaEvade.Init();
-            Events.Init();
             Activator.Load.Init();
+            Events.Init();
             //Tracker.Ganks.Init();
         }
     }
