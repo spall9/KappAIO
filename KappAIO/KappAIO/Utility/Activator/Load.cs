@@ -14,6 +14,8 @@ namespace KappAIO.Utility.Activator
             try
             {
                 MenuIni = MainMenu.AddMenu("KappActivator", "KappActivator");
+                MenuIni.CreateCheckBox("Champ", "Load Only Activator", false);
+
                 Items.Potions.Init();
                 Cleanse.Qss.Init();
                 Summoners.Init();

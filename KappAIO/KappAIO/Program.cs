@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using EloBuddy;
 using EloBuddy.SDK.Events;
 using KappAIO.Champions;
+using KappAIO.Common;
 
 namespace KappAIO
 {
@@ -18,6 +19,8 @@ namespace KappAIO
         private static void Loading_OnLoadingComplete(EventArgs args)
         {
             Utility.Load.Init();
+            if(Utility.Activator.Load.MenuIni.CheckBoxValue("Champ")) return;
+
             if (!SupportedHeros.Contains(Player.Instance.Hero)) return;
             var Instance = (Base)Activator.CreateInstance(null, "KappAIO.Champions." + Player.Instance.Hero + "." + Player.Instance.Hero).Unwrap();
             CheckVersion.Init();
