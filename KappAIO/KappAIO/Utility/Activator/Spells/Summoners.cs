@@ -29,7 +29,7 @@ namespace KappAIO.Utility.Activator.Spells
         private static void Game_OnTick(System.EventArgs args)
         {
             var target = TargetSelector.GetTarget(600, DamageType.True);
-            if (target != null && target.IsKillable(600) && target.CountEnemiesInRange(1000) >= target.CountAlliesInRange(1000) && Player.Instance.GetSummonerSpellDamage(target, DamageLibrary.SummonerSpells.Ignite) >= target.TotalShieldHealth() && Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.Combo) && SummonerSpells.Ignite.IsReady() && SummMenu.CheckBoxValue("ignite"))
+            if (target != null && target.IsKillable(600) && !target.IsValidTarget(Player.Instance.GetAutoAttackRange()) && target.CountEnemiesInRange(1000) >= target.CountAlliesInRange(1000) && Player.Instance.GetSummonerSpellDamage(target, DamageLibrary.SummonerSpells.Ignite) >= target.TotalShieldHealth() && Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.Combo) && SummonerSpells.Ignite.IsReady() && SummMenu.CheckBoxValue("ignite"))
             {
                 SummonerSpells.Ignite.Cast(target);
             }
@@ -37,7 +37,7 @@ namespace KappAIO.Utility.Activator.Spells
 
         private static void Events_OnIncomingDamage(Events.InComingDamageEventArgs args)
         {
-            if(args.Target == null || !args.Target.IsKillable() || args.Target.Distance(Player.Instance) > 800 || !SummonerSpells.Heal.IsReady()) return;
+            if(args.Target == null || !args.Target.IsKillable() || args.InComingDamage < 1 || args.Target.Distance(Player.Instance) > 800 || !SummonerSpells.Heal.IsReady()) return;
             
             var damagepercent = args.InComingDamage / args.Target.TotalShieldHealth() * 100;
             var death = args.InComingDamage >= args.Target.Health && args.Target.HealthPercent < 99;

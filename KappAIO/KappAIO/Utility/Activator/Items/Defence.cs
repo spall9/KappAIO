@@ -58,7 +58,7 @@ namespace KappAIO.Utility.Activator.Items
         {
             try
             {
-                if (args.Target == null || !args.Target.IsKillable())
+                if (args.Target == null || args.InComingDamage < 1 || !args.Target.IsKillable())
                     return;
 
                 if (args.Target.IsAlly && !args.Target.IsMe && Def.CheckBoxValue("ally"))

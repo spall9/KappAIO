@@ -29,22 +29,17 @@ namespace KappAIO.Utility.Tracker
             {
                 EnemyJungler.StartTick = Core.GameTickCount;
             }
-
-            var traveltime = EnemyJungler.Hero.Distance(Player.Instance) / EnemyJungler.Hero.MoveSpeed * 1000;
+            var readpath = EnemyJungler.Hero.GetPath(Player.Instance.ServerPosition);
+            var traveltime = readpath.FirstOrDefault().Distance(readpath.LastOrDefault()) / EnemyJungler.Hero.MoveSpeed * 1000;
             var countdown = (int)(EnemyJungler.StartTick + traveltime - Core.GameTickCount);
-            
-            if (countdown >= 20000)
-            {
-                JunglerTime.Color = Color.GreenYellow;
-            }
-            if (countdown >= 10000 && countdown < 20000)
-            {
-                JunglerTime.Color = Color.Orange;
-            }
-            if (countdown < 10000)
-            {
-                JunglerTime.Color = Color.OrangeRed;
-            }
+
+            var percentage = 100 * Math.Max(0, countdown) / 20000;
+
+            var green = Math.Min(255, 255f / 100f * percentage);
+            var red = Math.Min(255, 255 - green);
+
+            JunglerTime.Color = Color.FromArgb((int)red, (int)green, 0);
+
             JunglerTime.TextValue = (EnemyJungler.Hero.IsDead ? "Dead" : countdown.ToString(CultureInfo.CurrentCulture)) + " - " + EnemyJungler.Hero.ChampionName;
             JunglerTime.Position = Player.Instance.ServerPosition.WorldToScreen();
             JunglerTime.Draw();

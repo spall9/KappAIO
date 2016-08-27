@@ -65,6 +65,10 @@ namespace KappAIO.Champions.Gangplank
 
         internal static Obj_AI_Minion KillableBarrel(Barrels b)
         {
+            if (b == null)
+            {
+                return null;
+            }
             if (Prediction.Health.GetPrediction(b.Barrel, (int)QTravelTime(b.Barrel)) < 2)
             {
                 return b.Barrel;

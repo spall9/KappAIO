@@ -7,6 +7,7 @@ using EloBuddy.SDK;
 using EloBuddy.SDK.Enumerations;
 using EloBuddy.SDK.Events;
 using EloBuddy.SDK.Menu;
+using EloBuddy.SDK.Menu.Values;
 using EloBuddy.SDK.Rendering;
 using KappAIO.Common;
 using SharpDX;
@@ -66,15 +67,17 @@ namespace KappAIO.Champions.Kalista
             AutoMenu.CreateCheckBox("EDeath", "E Before Death");
             AutoMenu.CreateCheckBox("AutoEJungle", "Auto Steal Jungle Camps (E)");
             AutoMenu.CreateCheckBox("AutoEBig", "Auto Use E Big Minions");
-            AutoMenu.CreateCheckBox("AutoEUnKillable", "Auto Use E On UnKillable Minions");
-            AutoMenu.CreateCheckBox("AutoE", "Auto Use E if no modes active");
+            AutoMenu.CreateCheckBox("AutoEUnKillable", "Auto Use E On UnKillable Minions", false);
+            AutoMenu.CreateCheckBox("AutoE", "Auto Use E if no modes active", false);
             AutoMenu.CreateSlider("AutoEcount", "{0} Min Stacks to Auto E", 5, 1, 25);
 
+            ComboMenu.CreateCheckBox("Gapclose", "Auto Attack Minions To GapClose");
             ComboMenu.CreateSlider("EKillCount", "Use E To Kill {0}+ Enemies Only", 1, 1, 6);
 
             HarassMenu.CreateCheckBox("Emin", "E Kill Minion For Harass");
             HarassMenu.CreateSlider("Estacks", "{0} Stacks to Use E", 5, 1, 25);
 
+            LaneClearMenu.CreateKeyBind("Etog", "E Toggle LaneClear", false, KeyBind.BindTypes.PressToggle);
             LaneClearMenu.CreateSlider("Qhits", "Q Hit Count {0}", 3, 1, 15);
             LaneClearMenu.CreateSlider("Ekills", "E Kill Count {0}", 2, 1, 10);
 
@@ -168,10 +171,18 @@ namespace KappAIO.Champions.Kalista
                     return;
                 }
             }
+            if (LaneClearMenu.KeyBindValue("Etog"))
+            {
+                if (EntityManager.MinionsAndMonsters.EnemyMinions.Count(m => m.IsKillable(E.Range) && m.EKill()) >= LaneClearMenu.SliderValue("Ekills"))
+                {
+                    E.Cast();
+                }
+            }
         }
 
         public override void Combo()
         {
+            Gapclose();
             if (ComboMenu.CompareSlider("EKillCount", EntityManager.Heroes.Enemies.Count(e => e.IsKillable(E.Range) && ComboMenu.CheckBoxValue(E.Slot) && e.EKill())) && E.IsReady())
             {
                 E.Cast();
@@ -294,6 +305,16 @@ namespace KappAIO.Champions.Kalista
             }
         }
 
+        private static void Gapclose()
+        {
+            if (user.CountEnemiesInRange(user.GetAutoAttackRange()) < 1)
+            {
+                var attacktarget = ObjectManager.Get<Obj_AI_Minion>().OrderBy(m => m.Distance(Game.CursorPos)).FirstOrDefault(m => !m.IsDead && m.Health > 0 && m.IsKillable(user.GetAutoAttackRange()));
+                Player.IssueOrder(GameObjectOrder.AttackTo, attacktarget);
+                Orbwalker.OrbwalkTo(Game.CursorPos);
+            }
+        }
+
         public static Text Edmg;
 
         public override void Draw()
@@ -325,6 +346,13 @@ namespace KappAIO.Champions.Kalista
 
         private static void QCast(Obj_AI_Base target, bool transfer = false, int HitCount = -1)
         {
+            /*
+            var pred = Prediction.Position.GetPrediction(
+                new Prediction.Manager.PredictionInput
+                    {
+                        Range = Q.Range, Delay = Q.CastDelay, Radius = Q.Radius, Target = target, Type = SkillShotType.Linear, From = user.ServerPosition, Speed = Q.Speed,
+                        CollisionTypes = new HashSet<CollisionType> { CollisionType.AiHeroClient, CollisionType.ObjAiMinion, CollisionType.YasuoWall }, RangeCheckFrom = user.ServerPosition
+                    });*/
             var collidelist = new List<Obj_AI_Base>();
             collidelist.Clear();
             var pred = Q.GetPrediction(target);
