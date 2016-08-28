@@ -8,12 +8,12 @@ namespace KappAIO.Champions.Kalista
     {
         public static bool EKill(this Obj_AI_Base target)
         {
-            return target.EDamage(target.RendCount()) >= Prediction.Health.GetPrediction(target, Game.Ping / 2) && target.RendCount() > 0;
+            return target.EDamage(target.RendCount()) >= target.TotalShieldHealth() && target.RendCount() > 0;
         }
 
         public static bool EKill(Obj_AI_Base From, Obj_AI_Base To)
         {
-            return To.EDamage(From.RendCount() + To.RendCount()) + Player.Instance.GetSpellDamage(To, SpellSlot.Q) >= Prediction.Health.GetPrediction(To, Game.Ping / 2) && Kalista.Q.WillKill(From);
+            return To.EDamage(From.RendCount() + To.RendCount()) + Player.Instance.GetSpellDamage(To, SpellSlot.Q) >= To.TotalShieldHealth() && Kalista.Q.WillKill(From);
         }
 
         public static int RendCount(this Obj_AI_Base target)

@@ -310,10 +310,8 @@ namespace KappAIO.Champions.Kalista
 
         private static void Gapclose()
         {
-            if (user.CountEnemiesInRange(user.GetAutoAttackRange()) < 1)
-            {
-                Orbwalker.ForcedTarget = EntityManager.MinionsAndMonsters.CombinedAttackable.OrderBy(m => m.Distance(Game.CursorPos)).FirstOrDefault(m => !m.IsDead && m.IsEnemy && m.Health > 0 && m.IsKillable(user.GetAutoAttackRange()));
-            }
+            Orbwalker.ForcedTarget = user.CountEnemiesInRange(user.GetAutoAttackRange()) < 1 ?
+                EntityManager.MinionsAndMonsters.CombinedAttackable.OrderBy(m => m.Distance(Game.CursorPos)).FirstOrDefault(m => !m.IsDead && m.IsEnemy && m.Health > 0 && m.IsKillable(user.GetAutoAttackRange())) : null;
         }
 
         public static Text Edmg;
@@ -334,7 +332,7 @@ namespace KappAIO.Champions.Kalista
                 {
                     Edmg.Color = System.Drawing.Color.Red;
                 }
-                Edmg.TextValue = (int)obj.EDamage(obj.RendCount()) + " / " + (int)Prediction.Health.GetPrediction(obj, Game.Ping / 2);
+                Edmg.TextValue = (int)obj.EDamage(obj.RendCount()) + " / " + (int)obj.TotalShieldHealth();
                 Edmg.Position = new Vector2(x, y);
                 Edmg.Draw();
             }
