@@ -78,6 +78,7 @@ namespace KappAIO.Champions.Gangplank
             ComboMenu.CreateCheckBox("FB", "Place First Barrel");
             ComboMenu.CreateSlider("RAOE", "R AoE Hit {0}", 3, 1, 6);
 
+            KillStealMenu.CreateCheckBox("RSwitch", "Use Only Upgrades Damage");
             KillStealMenu.CreateSlider("Rdmg", "Multipy R Damage By X{0}", 3, 1, 12);
 
             LaneClearMenu.CreateCheckBox("QLH", "LastHit Mode Q");
@@ -459,9 +460,19 @@ namespace KappAIO.Champions.Gangplank
                 {
                     Q.Cast(enemy);
                 }
-                if (R.IsReady() && enemy.CountEnemiesInRange(1000) >= enemy.CountAlliesInRange(1000) && enemy.Distance(user) >= Q.Range + 1000 && KillStealMenu.CheckBoxValue(SpellSlot.R) && R.WillKill(enemy, KillStealMenu.SliderValue("Rdmg"), Rdamage(enemy)))
+                if (R.IsReady() && enemy.CountEnemiesInRange(1000) >= enemy.CountAlliesInRange(1000) && enemy.Distance(user) >= Q.Range + 1000 && KillStealMenu.CheckBoxValue(SpellSlot.R))
                 {
-                    R.CastAOE(1, R.Range);
+                    if (KillStealMenu.CheckBoxValue("RSwitch") && Rdamage(enemy) > 0 ? Rdamage(enemy) >= enemy.TotalShieldHealth() : R.WillKill(enemy, KillStealMenu.SliderValue("Rdmg"), Rdamage(enemy)))
+                    {
+                        if (KillStealMenu.CheckBoxValue("RSwitch") && Rdamage(enemy) > 0)
+                        {
+                            Player.CastSpell(SpellSlot.R, enemy.PrediectPosition(R.CastDelay + Game.Ping));
+                        }
+                        else
+                        {
+                            R.CastAOE(1, R.Range);
+                        }
+                    }
                 }
                 if (KillStealMenu.CheckBoxValue(SpellSlot.E))
                 {

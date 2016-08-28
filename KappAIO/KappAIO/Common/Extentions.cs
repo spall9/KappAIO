@@ -35,8 +35,7 @@ namespace KappAIO.Common
         /// <summary>
         ///     Supported Jungle Mobs.
         /// </summary>
-        public static string[] Junglemobs = new []
-        {
+        public static string[] Junglemobs = {
             "SRU_Dragon_Air", "SRU_Dragon_Earth", "SRU_Dragon_Fire", "SRU_Dragon_Water",
             "SRU_Dragon_Elder", "SRU_Baron", "SRU_Gromp", "SRU_Krug", "SRU_Razorbeak",
             "Sru_Crab", "SRU_Murkwolf", "SRU_Blue", "SRU_Red", "SRU_RiftHerald",
@@ -122,7 +121,7 @@ namespace KappAIO.Common
         /// <summary>
         ///     Attemtps To Cast the spell AoE.
         /// </summary>
-        public static void CastAOE(this Spell.Skillshot spell, int hitcount, float CustomRange = -1, AIHeroClient target = null)
+        public static bool CastAOE(this Spell.Skillshot spell, int hitcount, float CustomRange = -1, AIHeroClient target = null)
         {
             var range = CustomRange.Equals(-1) ? spell.Range : CustomRange;
             if (spell.Type == SkillShotType.Circular)
@@ -141,19 +140,19 @@ namespace KappAIO.Common
                                 if (target == null)
                                 {
                                     Player.CastSpell(spell.Slot, p.To3D());
+                                    return true;
                                 }
-                                else
+                                if (target.ServerPosition.IsInRange(p.To3D(), spell.Width))
                                 {
-                                    if (target.ServerPosition.IsInRange(p.To3D(), spell.Width))
-                                    {
-                                        Player.CastSpell(spell.Slot, p.To3D());
-                                    }
+                                    Player.CastSpell(spell.Slot, p.To3D());
+                                    return true;
                                 }
                             }
                         }
                     }
                 }
             }
+            return false;
         }
 
         /// <summary>
