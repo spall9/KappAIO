@@ -20,7 +20,7 @@ namespace KappAIO.Champions.Kalista
     internal class Kalista : Base
     {
         private static string appdata = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\EloBuddy\\KappAIO\\temp\\";
-
+        private static bool Created;
         private static float LastE;
         private static AIHeroClient BoundHero;
 
@@ -39,6 +39,7 @@ namespace KappAIO.Champions.Kalista
             if (!File.Exists(appdata + Game.GameId + ".dat"))
             {
                 File.Create(appdata + Game.GameId + ".dat");
+                Created = true;
             }
 
             Edmg = new Text(string.Empty, new Font("Tahoma", 9, FontStyle.Bold)) { Color = System.Drawing.Color.White };
@@ -106,6 +107,15 @@ namespace KappAIO.Champions.Kalista
             Gapcloser.OnGapcloser += Gapcloser_OnGapcloser;
             //Obj_AI_Base.OnBuffGain += Obj_AI_Base_OnBuffGain;
             Obj_AI_Base.OnProcessSpellCast += Obj_AI_Base_OnProcessSpellCast;
+            Events.OnGameEnd += Events_OnGameEnd;
+        }
+
+        private static void Events_OnGameEnd(EventArgs args)
+        {
+            if (File.Exists(appdata + Game.GameId + ".dat"))
+            {
+                File.Delete(appdata + Game.GameId + ".dat");
+            }
         }
 
         private static void Obj_AI_Base_OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
@@ -171,11 +181,11 @@ namespace KappAIO.Champions.Kalista
 
         public override void Active()
         {
-            if (BoundHero == null)
+            if (BoundHero == null && Created)
             {
                 if (File.Exists(appdata + Game.GameId + ".dat"))
                 {
-                    var read = File.ReadAllLines(appdata + Game.GameId + ".dat");
+                    var read = File.ReadAllLines(appdata + Game.GameId + ".dat");   
                     BoundHero = EntityManager.Heroes.Allies.FirstOrDefault(a => read.Contains(a.NetworkId.ToString()));
                 }
             }

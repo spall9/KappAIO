@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using EloBuddy;
 using EloBuddy.SDK;
 using EloBuddy.SDK.Constants;
@@ -13,6 +14,17 @@ namespace KappAIO.Common
         /// Fires when There is In Coming Damage to an ally
         /// </summary>
         public static event OnInComingDamage OnIncomingDamage;
+
+        /// <summary>
+        ///     Fires when the game has ended
+        /// </summary>
+        public static event OnGameEndHandler OnGameEnd;
+
+        /// <summary>
+        ///     A handler for the OnGameEnd event
+        /// </summary>
+        /// <param name="args">The arguments the event provides</param>
+        public delegate void OnGameEndHandler(EventArgs args);
 
         /// <summary>
         ///     A handler for the InComingDamage event
@@ -41,8 +53,15 @@ namespace KappAIO.Common
 
         public static void Init()
         {
+            var Ended = false;
             Game.OnUpdate += delegate
             {
+                if (ObjectManager.Get<Obj_HQ>().Any(h => h.IsDead || h.Health <= 0) && !Ended)
+                {
+                    Ended = true;
+                    OnGameEnd?.Invoke(EventArgs.Empty);
+                }
+
                 // Used to Invoke the Incoming Damage Event When there is SkillShot Incoming
                 foreach (var spell in Collision.NewSpells)
                 {
