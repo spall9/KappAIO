@@ -31,6 +31,16 @@ namespace KappAIO.Champions.Kalista
 
         static Kalista()
         {
+            if (!Directory.Exists(appdata))
+            {
+                Directory.CreateDirectory(appdata);
+            }
+
+            if (!File.Exists(appdata + Game.GameId + ".dat"))
+            {
+                File.Create(appdata + Game.GameId + ".dat");
+            }
+
             Edmg = new Text(string.Empty, new Font("Tahoma", 9, FontStyle.Bold)) { Color = System.Drawing.Color.White };
             Q = new Spell.Skillshot(SpellSlot.Q, 1150, SkillShotType.Linear, 250, 2100, 60) { AllowedCollisionCount = int.MaxValue };
             W = new Spell.Skillshot(SpellSlot.W, 5000, SkillShotType.Circular, 250, 2100, 80);
@@ -89,17 +99,7 @@ namespace KappAIO.Champions.Kalista
 
             KillStealMenu.CreateCheckBox("ETransfer", "Stacks Transfer Killsteal (Q > E)");
             DrawMenu.CreateCheckBox("EDMG", "Draw E Damage");
-
-            if (!Directory.Exists(appdata))
-            {
-                Directory.CreateDirectory(appdata);
-            }
-
-            if (!File.Exists(appdata + Game.GameId + ".dat"))
-            {
-                File.Create(appdata + Game.GameId + ".dat");
-            }
-
+            
             Orbwalker.OnUnkillableMinion += Orbwalker_OnUnkillableMinion;
             Spellbook.OnCastSpell += Spellbook_OnCastSpell;
             Events.OnIncomingDamage += Events_OnIncomingDamage;

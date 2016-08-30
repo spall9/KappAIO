@@ -29,7 +29,7 @@ namespace KappAIO.Champions.Kalista
             var Edmg = new float[] { 20, 30, 40, 50, 60 }[index];
             var EdmgPS = new float[] { 10, 14, 19, 25, 32 }[index];
             var EdmgPSM = new[] { 0.2f, 0.225f, 0.25f, 0.275f, 0.3f }[index];
-            if (stacks == 0)
+            if (stacks == 0 || !Kalista.E.IsLearned)
             {
                 return 0;
             }
