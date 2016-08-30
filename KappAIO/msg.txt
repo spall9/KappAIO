@@ -1,1 +1,1 @@
-DamageHandler for Activator !
+Fixed Barrels Connection Range !

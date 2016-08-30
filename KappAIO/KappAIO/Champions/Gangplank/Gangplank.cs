@@ -13,7 +13,7 @@ namespace KappAIO.Champions.Gangplank
 {
     internal class Gangplank : Base
     {
-        internal static int ConnectionRange = 685;
+        internal static int ConnectionRange = 675;
 
         public static Spell.Targeted Q { get; }
         public static Spell.Active W { get; }

@@ -3,7 +3,7 @@ using KappAIO.Common.KappaEvade;
 
 namespace KappAIO.Utility
 {
-    class Load
+    internal class Load
     {
         public static void Init()
         {

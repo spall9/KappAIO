@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using EloBuddy;
 using EloBuddy.SDK;
@@ -18,6 +19,8 @@ namespace KappAIO.Champions.Kalista
 {
     internal class Kalista : Base
     {
+        private static string appdata = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\EloBuddy\\KappAIO\\temp\\";
+
         private static float LastE;
         private static AIHeroClient BoundHero;
 
@@ -63,6 +66,7 @@ namespace KappAIO.Champions.Kalista
                 });
 
             //AutoMenu.CreateCheckBox("exploit", "Enable Kalista Exploit (WILL BAN YOU)", false);
+            AutoMenu.CreateCheckBox("SoulBound", "R Save Soul Bound");
             AutoMenu.CreateCheckBox("AutoR", "Auto R");
             AutoMenu.CreateCheckBox("EDeath", "E Before Death");
             AutoMenu.CreateCheckBox("AutoEJungle", "Auto Steal Jungle Camps (E)");
@@ -86,11 +90,30 @@ namespace KappAIO.Champions.Kalista
             KillStealMenu.CreateCheckBox("ETransfer", "Stacks Transfer Killsteal (Q > E)");
             DrawMenu.CreateCheckBox("EDMG", "Draw E Damage");
 
+            if (!Directory.Exists(appdata))
+            {
+                Directory.CreateDirectory(appdata);
+            }
+
+            if (!File.Exists(appdata + Game.GameId + ".dat"))
+            {
+                File.Create(appdata + Game.GameId + ".dat");
+            }
+
             Orbwalker.OnUnkillableMinion += Orbwalker_OnUnkillableMinion;
             Spellbook.OnCastSpell += Spellbook_OnCastSpell;
             Events.OnIncomingDamage += Events_OnIncomingDamage;
             Gapcloser.OnGapcloser += Gapcloser_OnGapcloser;
             //Obj_AI_Base.OnBuffGain += Obj_AI_Base_OnBuffGain;
+            Obj_AI_Base.OnProcessSpellCast += Obj_AI_Base_OnProcessSpellCast;
+        }
+
+        private static void Obj_AI_Base_OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
+        {
+            if (sender != null && sender.IsMe && args.Target != null && args.Target.IsAlly && args.SData.Name.Equals("KalistaPSpellCast", StringComparison.CurrentCultureIgnoreCase))
+            {
+                File.WriteAllText(appdata + Game.GameId + ".dat", args.Target.NetworkId.ToString());
+            }
         }
 
         private static void Obj_AI_Base_OnBuffGain(Obj_AI_Base sender, Obj_AI_BaseBuffGainEventArgs args)
@@ -115,6 +138,11 @@ namespace KappAIO.Champions.Kalista
             if (AutoMenu.CheckBoxValue("EDeath") && args.Target.IsMe && args.InComingDamage >= user.TotalShieldHealth())
             {
                 E.Cast();
+            }
+
+            if (args.Target?.NetworkId == BoundHero?.NetworkId && args.InComingDamage >= args.Target.TotalShieldHealth() && AutoMenu.CheckBoxValue("SoulBound") && R.IsReady())
+            {
+                R.Cast();
             }
         }
 
@@ -143,6 +171,15 @@ namespace KappAIO.Champions.Kalista
 
         public override void Active()
         {
+            if (BoundHero == null)
+            {
+                if (File.Exists(appdata + Game.GameId + ".dat"))
+                {
+                    var read = File.ReadAllLines(appdata + Game.GameId + ".dat");
+                    BoundHero = EntityManager.Heroes.Allies.FirstOrDefault(a => read.Contains(a.NetworkId.ToString()));
+                }
+            }
+
             if(!E.IsReady()) return;
             if (AutoMenu.CheckBoxValue("AutoEJungle"))
             {

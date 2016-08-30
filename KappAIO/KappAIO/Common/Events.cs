@@ -96,7 +96,7 @@ namespace KappAIO.Common
             if (args.DamageType == InComingDamageEventArgs.Type.TurretAttack && !DamageHandler.CheckBoxValue("Turrets")) return;
             if (args.DamageType == InComingDamageEventArgs.Type.SkillShot && !DamageHandler.CheckBoxValue("Skillshots")) return;
             if (args.DamageType == InComingDamageEventArgs.Type.TargetedSpell && !DamageHandler.CheckBoxValue("Targetedspells")) return;
-            OnIncomingDamage?.Invoke(new InComingDamageEventArgs(args.Sender, args.Target, args.InComingDamage * (DamageHandler.SliderValue("Mod") * 0.001f), args.DamageType));
+            OnIncomingDamage?.Invoke(new InComingDamageEventArgs(args.Sender, args.Target, args.InComingDamage * (DamageHandler.SliderValue("Mod") * 0.01f), args.DamageType));
         }
     }
 }

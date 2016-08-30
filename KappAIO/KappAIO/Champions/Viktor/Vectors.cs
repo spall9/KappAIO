@@ -19,7 +19,7 @@ namespace KappAIO.Champions.Viktor
             var rectlist = new List<Geometry.Polygon.Rectangle>();
             rectlist.Clear();
             var pred = Viktor.E.GetPrediction(target);
-
+            
             if(pred.HitChance < HitChance.Low) return;
 
             Vector3 Start = pred.CastPosition.Distance(Player.Instance) > 525 ? Player.Instance.ServerPosition.Extend(pred.CastPosition, 525).To3D() : target.ServerPosition;
