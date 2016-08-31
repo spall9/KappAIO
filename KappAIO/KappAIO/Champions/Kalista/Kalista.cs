@@ -19,10 +19,28 @@ namespace KappAIO.Champions.Kalista
 {
     internal class Kalista : Base
     {
-        private static string appdata = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\EloBuddy\\KappAIO\\temp\\";
-        private static bool Created;
+        private static readonly string appdata = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData) + "\\EloBuddy\\KappAIO\\temp\\";
+        private static readonly bool Created;
         private static float LastE;
         private static AIHeroClient BoundHero;
+
+        private static readonly List<BallistaHeros> Ballistaheros = new List<BallistaHeros>
+        {
+            new BallistaHeros(Champion.Blitzcrank, "rocketgrab2"),
+            new BallistaHeros(Champion.TahmKench, "tahmkenchdevoured"),
+            new BallistaHeros(Champion.Skarner, "SkarnerImpale")
+        };
+
+        private class BallistaHeros
+        {
+            public Champion Hero;
+            public string BuffName;
+            public BallistaHeros(Champion hero, string buffname)
+            {
+                this.Hero = hero;
+                this.BuffName = buffname;
+            }
+        }
 
         public static Spell.Skillshot Q { get; }
         public static Spell.Skillshot W { get; }
@@ -86,6 +104,14 @@ namespace KappAIO.Champions.Kalista
             AutoMenu.CreateCheckBox("AutoE", "Auto Use E if no modes active", false);
             AutoMenu.CreateSlider("AutoEcount", "{0} Min Stacks to Auto E", 5, 1, 25);
 
+            var balistahero = Ballistaheros.FirstOrDefault(a => EntityManager.Heroes.Allies.Any(b => a.Hero == b.Hero));
+
+            if (balistahero != null)
+            {
+                AutoMenu.CreateCheckBox(balistahero.Hero.ToString(), "Use Ballista With " + balistahero.Hero);
+                AutoMenu.CreateSlider(balistahero.Hero + "dis", "Min Distance To Use Ballista", 600, 0, 1100);
+            }
+
             ComboMenu.CreateCheckBox("Gapclose", "Auto Attack Minions To GapClose");
             ComboMenu.CreateSlider("EKillCount", "Use E To Kill {0}+ Enemies Only", 1, 1, 6);
 
@@ -105,7 +131,7 @@ namespace KappAIO.Champions.Kalista
             Spellbook.OnCastSpell += Spellbook_OnCastSpell;
             Events.OnIncomingDamage += Events_OnIncomingDamage;
             Gapcloser.OnGapcloser += Gapcloser_OnGapcloser;
-            //Obj_AI_Base.OnBuffGain += Obj_AI_Base_OnBuffGain;
+            Obj_AI_Base.OnBuffGain += Obj_AI_Base_OnBuffGain;
             Obj_AI_Base.OnProcessSpellCast += Obj_AI_Base_OnProcessSpellCast;
             Events.OnGameEnd += Events_OnGameEnd;
         }
@@ -129,9 +155,12 @@ namespace KappAIO.Champions.Kalista
         private static void Obj_AI_Base_OnBuffGain(Obj_AI_Base sender, Obj_AI_BaseBuffGainEventArgs args)
         {
             var caster = sender as AIHeroClient;
-            if (caster != null && R.IsReady() && caster.IsEnemy && args.Buff.DisplayName.Equals("rocketgrab2", StringComparison.CurrentCultureIgnoreCase) && BoundHero?.Hero == Champion.Blitzcrank)
+            if (caster != null && R.IsReady() && caster.IsEnemy && BoundHero != null)
             {
-                R.Cast();
+                if (Ballistaheros.Any(b => b?.Hero == BoundHero?.Hero && AutoMenu.CheckBoxValue(b.Hero.ToString()) && args.Buff.Name == b.BuffName && AutoMenu.SliderValue(b.Hero + "dis") >= user.Distance(BoundHero)))
+                {
+                    R.Cast();
+                }
             }
         }
 
