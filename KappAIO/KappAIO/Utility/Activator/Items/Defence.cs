@@ -63,7 +63,7 @@ namespace KappAIO.Utility.Activator.Items
 
                 if (args.Target.IsAlly && !args.Target.IsMe && Def.CheckBoxValue("ally"))
                 {
-                    if (Solari.ItemReady(Def) && Def.SliderValue(Solari.Id + "hp") >= args.Target.HealthPercent)
+                    if (Solari.ItemReady(Def) && args.Target.IsKillable(600) && Def.SliderValue(Solari.Id + "hp") >= args.Target.HealthPercent)
                     {
                         Solari.Cast();
                         return;
