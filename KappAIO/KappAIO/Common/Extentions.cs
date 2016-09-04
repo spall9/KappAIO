@@ -35,22 +35,55 @@ namespace KappAIO.Common
         /// <summary>
         ///     Supported Jungle Mobs.
         /// </summary>
-        public static string[] Junglemobs = {
+        public static string[] ACSJunglemobs = { "AscXerath" };
+
+        /// <summary>
+        ///     Supported Jungle Mobs.
+        /// </summary>
+        public static string[] SRJunglemobs = {
             "SRU_Dragon_Air", "SRU_Dragon_Earth", "SRU_Dragon_Fire", "SRU_Dragon_Water",
             "SRU_Dragon_Elder", "SRU_Baron", "SRU_Gromp", "SRU_Krug", "SRU_Razorbeak",
-            "Sru_Crab", "SRU_Murkwolf", "SRU_Blue", "SRU_Red", "SRU_RiftHerald",
-            "TT_NWraith", "TT_NWolf", "TT_NGolem", "TT_Spiderboss", "AscXerath"
+            "Sru_Crab", "SRU_Murkwolf", "SRU_Blue", "SRU_Red", "SRU_RiftHerald"
         };
+
+        /// <summary>
+        ///     Supported Jungle Mobs.
+        /// </summary>
+        public static string[] TTJungleMob = { "TT_NWraith", "TT_NWolf", "TT_NGolem", "TT_Spiderboss" };
 
         /// <summary>
         ///     Returns Supported Jungle Mobs.
         /// </summary>
-        public static IEnumerable<Obj_AI_Minion> SupportedJungleMobs
+        public static IEnumerable<Obj_AI_Minion> BigJungleMobs
         {
             get
             {
-                return EntityManager.MinionsAndMonsters.GetJungleMonsters().Where(m => Junglemobs.Any(j => j.Equals(m.BaseSkinName)));
+                var names = new string[] { };
+                if (Game.MapId == GameMapId.SummonersRift)
+                    names = SRJunglemobs;
+                if (Game.MapId == GameMapId.TwistedTreeline)
+                    names = TTJungleMob;
+                if (Game.MapId == GameMapId.CrystalScar)
+                    names = ACSJunglemobs;
+                
+                return EntityManager.MinionsAndMonsters.GetJungleMonsters().Where(m => names.Any(n => n.Equals(m.BaseSkinName)));
             }
+        }
+
+        /// <summary>
+        ///     Returns Lane Minions In Spell Range.
+        /// </summary>
+        public static IEnumerable<Obj_AI_Minion> LaneMinions(this Spell.SpellBase spell)
+        {
+            return EntityManager.MinionsAndMonsters.EnemyMinions.Where(m => m.IsKillable(spell.Range));
+        }
+
+        /// <summary>
+        ///     Returns Lane Minions In Spell Range.
+        /// </summary>
+        public static IEnumerable<Obj_AI_Minion> JungleMinions(this Spell.SpellBase spell)
+        {
+            return EntityManager.MinionsAndMonsters.GetJungleMonsters().Where(m => m.IsKillable(spell.Range));
         }
 
         /// <summary>
@@ -119,35 +152,108 @@ namespace KappAIO.Common
         }
 
         /// <summary>
+        ///     Casts spell with selected hitchance.
+        /// </summary>
+        public static void Cast(this Spell.Skillshot spell, AIHeroClient target, HitChance hitChance)
+        {
+            if (target != null && spell.IsReady() && target.IsKillable(spell.Range))
+            {
+                var pred = spell.GetPrediction(target);
+                if (pred.HitChance >= hitChance || target.IsCC())
+                {
+                    spell.Cast(pred.CastPosition);
+                }
+            }
+        }
+
+        /// <summary>
+        ///     Casts spell with selected hitchancepercent.
+        /// </summary>
+        public static void Cast(this Spell.Skillshot spell, Obj_AI_Base target, float hitchancepercent)
+        {
+            if (target != null && spell.IsReady() && target.IsKillable(spell.Range))
+            {
+                var pred = spell.GetPrediction(target);
+                if (pred.HitChancePercent >= hitchancepercent || target.IsCC())
+                {
+                    spell.Cast(pred.CastPosition);
+                }
+            }
+        }
+
+        /// <summary>
+        ///     Casts spell with selected hitchancepercent.
+        /// </summary>
+        public static void Cast(this Spell.Skillshot spell, AIHeroClient target, float hitchancepercent)
+        {
+            if (target != null && spell.IsReady() && target.IsKillable(spell.Range))
+            {
+                var pred = spell.GetPrediction(target);
+                if (pred.HitChancePercent >= hitchancepercent || target.IsCC())
+                {
+                    spell.Cast(pred.CastPosition);
+                }
+            }
+        }
+
+        public static void DrawLine(Vector3 from, Vector3 to, int width, System.Drawing.Color color)
+        {
+            var wts1 = Drawing.WorldToScreen(from);
+            var wts2 = Drawing.WorldToScreen(to);
+
+            Drawing.DrawLine(wts1[0], wts1[1], wts2[0], wts2[1], width, color);
+        }
+
+        /// <summary>
         ///     Attemtps To Cast the spell AoE.
         /// </summary>
-        public static bool CastAOE(this Spell.Skillshot spell, int hitcount, float CustomRange = -1, AIHeroClient target = null)
+        public static bool CastAOE(this Spell.Skillshot spell, IEnumerable<Obj_AI_Base> targetEnumerable, int hitcount, float CustomRange = -1)
         {
             var range = CustomRange.Equals(-1) ? spell.Range : CustomRange;
-            if (spell.Type == SkillShotType.Circular)
+            var targets = targetEnumerable as Obj_AI_Base[] ?? targetEnumerable.ToArray();
+            var predtype = Prediction.Position.PredictionData.PredictionType.Circular;
+            if (spell.Type.Equals(SkillShotType.Circular))
             {
-                foreach (var enemy in EntityManager.Heroes.Enemies.Where(e => e.IsKillable(range)))
+                if (Prediction.Manager.PredictionSelected.Equals("ICPrediction"))
                 {
-                    var pred = spell.GetPrediction(enemy);
-                    var circle = new Geometry.Polygon.Circle(pred.CastPosition, spell.Width);
-                    foreach (var point in circle.Points)
+                    foreach (var enemy in targets.Where(e => e.IsKillable(range)))
                     {
-                        circle = new Geometry.Polygon.Circle(point, spell.Width);
-                        foreach (var p in circle.Points.OrderBy(a => a.Distance(pred.CastPosition)))
+                        var pred = spell.GetPrediction(enemy);
+                        var circle = new Geometry.Polygon.Circle(pred.CastPosition, spell.Width);
+                        foreach (var point in circle.Points)
                         {
-                            if (p.CountEnemiesInRange(spell.Width) >= hitcount)
+                            circle = new Geometry.Polygon.Circle(point, spell.Width);
+                            foreach (var p in circle.Points.OrderBy(a => a.Distance(pred.CastPosition)))
                             {
-                                if (target == null)
-                                {
-                                    Player.CastSpell(spell.Slot, p.To3D());
-                                    return true;
-                                }
-                                if (target.ServerPosition.IsInRange(p.To3D(), spell.Width))
+                                if (targets.Count(t => spell.GetPrediction(t).CastPosition.IsInRange(p, spell.Width) && t.IsKillable()) >= hitcount)
                                 {
                                     Player.CastSpell(spell.Slot, p.To3D());
                                     return true;
                                 }
                             }
+                        }
+                    }
+                }
+                else
+                {
+                    var predi = Prediction.Position.GetPredictionAoe(
+                        targets,
+                        new Prediction.Position.PredictionData(
+                            predtype,
+                            (int)range,
+                            spell.Width,
+                            spell.ConeAngleDegrees,
+                            spell.CastDelay,
+                            spell.Speed,
+                            spell.AllowedCollisionCount,
+                            Player.Instance.ServerPosition));
+
+                    foreach (var pre in predi)
+                    {
+                        if (pre.CollisionObjects.Count(e => e.IsKillable(spell.Range)) >= hitcount && pre.HitChance >= HitChance.Low)
+                        {
+                            spell.Cast(pre.CastPosition);
+                            return true;
                         }
                     }
                 }
@@ -196,6 +302,14 @@ namespace KappAIO.Common
         }
 
         /// <summary>
+        ///     Returns ComboBox Value.
+        /// </summary>
+        public static int ComboBoxValue(this Menu m, string id)
+        {
+            return m[id].Cast<ComboBox>().CurrentValue;
+        }
+
+        /// <summary>
         ///     Returns CheckBox Value.
         /// </summary>
         public static bool CheckBoxValue(this Menu m, string id)
@@ -232,7 +346,7 @@ namespace KappAIO.Common
         /// </summary>
         public static bool WillKill(this Spell.SpellBase spell, Obj_AI_Base target, float MultiplyDmgBy = 1, float ExtraDamage = 0, DamageType ExtraDamageType = DamageType.True)
         {
-            return Player.Instance.GetSpellDamage(target, spell.Slot) * MultiplyDmgBy + Player.Instance.CalculateDamageOnUnit(target, ExtraDamageType, ExtraDamage) >= Prediction.Health.GetPrediction(target, spell.CastDelay + Game.Ping);
+            return Player.Instance.GetSpellDamage(target, spell.Slot) * MultiplyDmgBy + Player.Instance.CalculateDamageOnUnit(target, ExtraDamageType, ExtraDamage) >= spell.GetHealthPrediction(target);
         }
 
         /// <summary>

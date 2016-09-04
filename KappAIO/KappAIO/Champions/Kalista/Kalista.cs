@@ -222,7 +222,7 @@ namespace KappAIO.Champions.Kalista
             if(!E.IsReady()) return;
             if (AutoMenu.CheckBoxValue("AutoEJungle"))
             {
-                foreach (var mob in SupportedJungleMobs.Where(m => m != null && m.IsKillable(E.Range) && m.EKill()))
+                foreach (var mob in BigJungleMobs.Where(m => m != null && m.IsKillable(E.Range) && m.EKill()))
                 {
                     if(mob != null)
                         E.Cast();
@@ -341,7 +341,7 @@ namespace KappAIO.Champions.Kalista
                 }
                 else
                 {
-                    foreach (var mob in SupportedJungleMobs.Where(m => m != null && m.IsKillable(E.Range) && m.EKill()))
+                    foreach (var mob in BigJungleMobs.Where(m => m != null && m.IsKillable(E.Range) && m.EKill()))
                     {
                         if (mob != null)
                             E.Cast();
@@ -352,7 +352,7 @@ namespace KappAIO.Champions.Kalista
 
             if (Q.IsReady() && JungleClearMenu.CheckBoxValue(SpellSlot.Q) && JungleClearMenu.CompareSlider("Qmana", user.ManaPercent))
             {
-                foreach (var mob in SupportedJungleMobs.Where(m => m != null && m.IsKillable(Q.Range)))
+                foreach (var mob in BigJungleMobs.Where(m => m != null && m.IsKillable(Q.Range)))
                 {
                     if (mob != null)
                         Q.Cast(mob);

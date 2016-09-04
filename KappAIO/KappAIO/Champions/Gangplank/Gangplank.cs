@@ -209,7 +209,7 @@ namespace KappAIO.Champions.Gangplank
             Orbwalker.ForcedTarget = null;
             if (R.IsReady() && ComboMenu.CheckBoxValue(SpellSlot.R))
             {
-                R.CastAOE(ComboMenu.SliderValue("RAOE"), 3000);
+                R.CastAOE(EntityManager.Heroes.Enemies, ComboMenu.SliderValue("RAOE"), 3000);
             }
 
             var target = 
@@ -470,7 +470,7 @@ namespace KappAIO.Champions.Gangplank
                         }
                         else
                         {
-                            R.CastAOE(1, R.Range);
+                            R.CastAOE(EntityManager.Heroes.Enemies, 1, R.Range);
                         }
                     }
                 }
