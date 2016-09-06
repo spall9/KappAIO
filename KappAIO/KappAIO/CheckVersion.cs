@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Net;
 using EloBuddy;
-using EloBuddy.SDK.Rendering;
 using KappAIO.Common;
 using Version = System.Version;
 
@@ -9,7 +8,7 @@ namespace KappAIO
 {
     internal class CheckVersion
     {
-        private static Text text;
+        //private static Text text;
         private static string UpdateMsg = string.Empty;
         private const string UpdateMsgPath = "https://raw.githubusercontent.com/plsfixrito/KappAIO/master/KappAIO/msg.txt";
         private const string WebVersionPath = "https://raw.githubusercontent.com/plsfixrito/KappAIO/master/KappAIO/KappAIO/Properties/AssemblyInfo.cs";
@@ -20,7 +19,7 @@ namespace KappAIO
         {
             try
             {
-                var size = Drawing.Width <= 400 || Drawing.Height <= 400 ? 10F : 40F;
+                //var size = Drawing.Width <= 400 || Drawing.Height <= 400 ? 10F : 40F;
                 //text = new Text("YOUR KappAIO IS OUTDATED", new Font("Euphemia", size, FontStyle.Bold)) { Color = Color.White };
                 var WebClient = new WebClient();
                 WebClient.DownloadStringCompleted += delegate(object sender, DownloadStringCompletedEventArgs args) { UpdateMsg = args.Result; };

@@ -8,7 +8,7 @@ namespace KappAIO
 {
     internal class Program
     {
-        private static void Main(string[] args)
+        private static void Main()
         {
             Loading.OnLoadingComplete += Loading_OnLoadingComplete;
         }
