@@ -10,6 +10,7 @@ namespace KappAIO.Champions
     {
         public static AIHeroClient user = Player.Instance;
         public static string MenuName = "KappAIO " + user.ChampionName;
+        public static readonly List<Menu> MenuList = new List<Menu>();
         public static readonly List<Spell.SpellBase> SpellList = new List<Spell.SpellBase>();
         public static Menu MenuIni, AutoMenu, ComboMenu, HarassMenu, JungleClearMenu, LaneClearMenu, KillStealMenu, DrawMenu;
         public abstract void Active();

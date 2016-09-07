@@ -81,7 +81,11 @@ namespace KappAIO.Champions.Syndra
             KillStealMenu.CreateCheckBox("QE", "QE KillSteal");
 
             DrawMenu.CreateCheckBox("dmg", "Draw Combo Damage");
-            
+
+            MenuList.Add(HarassMenu);
+            MenuList.Add(LaneClearMenu);
+            MenuList.Add(JungleClearMenu);
+
             Obj_AI_Base.OnProcessSpellCast += Obj_AI_Base_OnProcessSpellCast;
             Spellbook.OnCastSpell += Spellbook_OnCastSpell;
             Gapcloser.OnGapcloser += Gapcloser_OnGapcloser;
@@ -150,6 +154,7 @@ namespace KappAIO.Champions.Syndra
         private static void Spellbook_OnCastSpell(Spellbook sender, SpellbookCastSpellEventArgs args)
         {
             if (!sender.Owner.IsMe) return;
+
             if(args.Slot == SpellSlot.W && W.Handle.ToggleState == 1)
                 args.Process = Core.GameTickCount - LastE > 150 + Game.Ping;
             if(args.Slot == SpellSlot.W)
@@ -159,6 +164,7 @@ namespace KappAIO.Champions.Syndra
         private static void Obj_AI_Base_OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
         {
             if (!sender.IsMe) return;
+
             if(args.Slot == SpellSlot.E)
                 LastE = Core.GameTickCount;
             if (args.Slot == SpellSlot.W)
@@ -192,10 +198,6 @@ namespace KappAIO.Champions.Syndra
 
             if (FullCombotarget != null && FullCombotarget.IsKillable())
             {
-                if (W.IsReady() && FullCombotarget.IsKillable(W.Range) && ComboMenu.CheckBoxValue(SpellSlot.W))
-                {
-                    WCast(FullCombotarget);
-                }
                 if (Q.IsReady() && FullCombotarget.IsKillable(Q.Range) && ComboMenu.CheckBoxValue(SpellSlot.Q))
                 {
                     Q.Cast(FullCombotarget, 45);
@@ -210,6 +212,10 @@ namespace KappAIO.Champions.Syndra
                     {
                         E.Cast(FullCombotarget, 25);
                     }
+                }
+                if (W.IsReady() && FullCombotarget.IsKillable(W.Range) && ComboMenu.CheckBoxValue(SpellSlot.W))
+                {
+                    WCast(FullCombotarget);
                 }
                 if (R.IsReady() && FullCombotarget.IsKillable(R.Range) && ComboMenu.CheckBoxValue(SpellSlot.R))
                 {
@@ -227,14 +233,16 @@ namespace KappAIO.Champions.Syndra
                 QE(Etarget);
             }
 
-            if (Wtarget != null && W.IsReady() && Wtarget.IsKillable(W.Range) && ComboMenu.CheckBoxValue(SpellSlot.W))
-            {
-                W.Cast(Wtarget);
-            }
             if (Qtarget != null && Q.IsReady() && Qtarget.IsKillable(Q.Range) && ComboMenu.CheckBoxValue(SpellSlot.Q))
             {
                 Q.Cast(Qtarget, 30);
             }
+
+            if (Wtarget != null && W.IsReady() && Wtarget.IsKillable(W.Range) && ComboMenu.CheckBoxValue(SpellSlot.W))
+            {
+                W.Cast(Wtarget);
+            }
+
             if (Etarget != null && E.IsReady() && ComboMenu.CheckBoxValue(SpellSlot.E))
             {
                 if (Etarget.IsKillable(E.Range) && user.HealthPercent <= 20)
@@ -242,6 +250,7 @@ namespace KappAIO.Champions.Syndra
                     E.Cast(Etarget, 25);
                 }
             }
+
             if (R.IsReady() && Rtarget != null && ComboMenu.CheckBoxValue(SpellSlot.R))
             {
                 R.Cast(Rtarget);
@@ -310,7 +319,7 @@ namespace KappAIO.Champions.Syndra
             if (W.IsReady() && LaneClearMenu.CheckBoxValue(SpellSlot.W) && LaneClearMenu.CompareSlider("Wmana", user.ManaPercent))
             {
                 var wminions = EntityManager.MinionsAndMonsters.GetCircularFarmLocation(W.LaneMinions(), W.Width * 2, (int)W.Range, W.CastDelay, W.Speed);
-                if (wminions.HitNumber >= LaneClearMenu.SliderValue("Whit"))
+                if (wminions.HitNumber + 1 >= LaneClearMenu.SliderValue("Whit"))
                 {
                     WCast(wminions.CastPosition);
                 }
@@ -400,6 +409,10 @@ namespace KappAIO.Champions.Syndra
                 float x = obj.HPBarPosition.X;
                 float y = obj.HPBarPosition.Y;
                 dmg.Color = Color.White;
+                if (ComboDamage(obj, true) >= obj.TotalShieldHealth())
+                {
+                    dmg.Color = Color.Red;
+                }
                 dmg.TextValue = (int)ComboDamage(obj, true) + " / " + (int)obj.TotalShieldHealth();
                 dmg.Position = new Vector2(x, y);
                 dmg.Draw();

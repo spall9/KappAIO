@@ -23,7 +23,7 @@ namespace KappAIO.Champions.Syndra
                 return null;
 
             Obj_AI_Minion theball = null;
-            var CastPosition = Syndra.Eball.GetPrediction(target).CastPosition;
+            var CastPosition = Syndra.Q.GetPrediction(target).CastPosition;
             foreach (var ball in BallsList.Where(b => b != null && Syndra.E.IsInRange(b)))
             {
                 var start = ball.ServerPosition.Extend(Player.Instance.ServerPosition, 100).To3D();
@@ -62,7 +62,7 @@ namespace KappAIO.Champions.Syndra
             var maxdmg = new float[] { 630, 975, 1260 }[index] + 1.4f * ap;
             var perballdmg = (new float[] { 90, 135, 180 }[index] + 0.2f * ap) * BallsList.Count();
 
-            return Player.Instance.CalculateDamageOnUnit(target, DamageType.Magical, Math.Max(mindmg, maxdmg) + perballdmg);
+            return Player.Instance.CalculateDamageOnUnit(target, DamageType.Magical, Math.Max(mindmg, maxdmg) + perballdmg) - 15;
         }
     }
 }
