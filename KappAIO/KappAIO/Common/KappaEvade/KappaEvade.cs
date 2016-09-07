@@ -27,8 +27,19 @@ namespace KappAIO.Common.KappaEvade
 
         public static bool IsInDanger(this Obj_AI_Base target, ActiveSpells spell)
         {
-            var HitBox = new Geometry.Polygon.Circle(target.ServerPosition, target.BoundingRadius + 10);
-            return HitBox.Points.Any(p => spell.ToPolygon().IsInside(p));
+            if (spell.spell.Speed > 90000)
+            {
+                return spell.ToPolygon().IsInside(target.PrediectPosition((int)spell.spell.CastDelay));
+            }
+
+            if(spell.Missile != null)
+            {
+                var arrivetime = spell.Missile.Distance(target) / spell.spell.Speed * 1000;
+                return spell.ToPolygon().IsInside(target.PrediectPosition((int)arrivetime));
+            }
+
+            var arrivetime2 = spell.Start.Distance(target) / spell.spell.Speed * 1000 + spell.spell.CastDelay;
+            return spell.ToPolygon().IsInside(target.PrediectPosition((int)arrivetime2));
         }
 
         public static Geometry.Polygon.Sector CreateCone(Vector3 Center, Vector3 Direction, float Angle, float Range)

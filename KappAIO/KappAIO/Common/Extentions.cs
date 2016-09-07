@@ -261,6 +261,11 @@ namespace KappAIO.Common
             return false;
         }
 
+        public static float Mana(this Spell.SpellBase spell)
+        {
+            return spell.Handle.SData.Mana;
+        }
+
         /// <summary>
         ///     Creates a checkbox.
         /// </summary>

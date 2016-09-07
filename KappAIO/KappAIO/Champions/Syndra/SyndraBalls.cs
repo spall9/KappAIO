@@ -26,8 +26,9 @@ namespace KappAIO.Champions.Syndra
             var CastPosition = Syndra.Q.GetPrediction(target).CastPosition;
             foreach (var ball in BallsList.Where(b => b != null && Syndra.E.IsInRange(b)))
             {
-                var start = ball.ServerPosition.Extend(Player.Instance.ServerPosition, 100).To3D();
-                var end = Player.Instance.ServerPosition.Extend(ball.ServerPosition, Syndra.Eball.Range).To3D();
+                var source = Player.Instance.PrediectPosition(Game.Ping + Syndra.Eball.CastDelay);
+                var start = ball.ServerPosition.Extend(source, 100).To3D();
+                var end = source.Extend(ball.ServerPosition, Syndra.Eball.Range).To3D();
                 var rect = new Geometry.Polygon.Rectangle(start, end, Syndra.Eball.Width);
                 if (rect.IsInside(CastPosition))
                 {

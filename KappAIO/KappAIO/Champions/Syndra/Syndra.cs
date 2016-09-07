@@ -198,11 +198,11 @@ namespace KappAIO.Champions.Syndra
 
             if (FullCombotarget != null && FullCombotarget.IsKillable())
             {
-                if (Q.IsReady() && FullCombotarget.IsKillable(Q.Range) && ComboMenu.CheckBoxValue(SpellSlot.Q))
+                if (Q.IsReady() && FullCombotarget.IsKillable(Q.Range) && ComboMenu.CheckBoxValue(SpellSlot.Q) && user.Mana >= Q.Mana() + W.Mana() + E.Mana() + R.Mana())
                 {
                     Q.Cast(FullCombotarget, 45);
                 }
-                if (E.IsReady() && ComboMenu.CheckBoxValue(SpellSlot.E))
+                if (E.IsReady() && ComboMenu.CheckBoxValue(SpellSlot.E) && user.Mana >= W.Mana() + E.Mana() + R.Mana())
                 {
                     if (SelectBall(FullCombotarget) != null && E.IsInRange(SelectBall(FullCombotarget)))
                     {
@@ -213,11 +213,11 @@ namespace KappAIO.Champions.Syndra
                         E.Cast(FullCombotarget, 25);
                     }
                 }
-                if (W.IsReady() && FullCombotarget.IsKillable(W.Range) && ComboMenu.CheckBoxValue(SpellSlot.W))
+                if (W.IsReady() && FullCombotarget.IsKillable(W.Range) && ComboMenu.CheckBoxValue(SpellSlot.W) && user.Mana >= W.Mana() + R.Mana())
                 {
                     WCast(FullCombotarget);
                 }
-                if (R.IsReady() && FullCombotarget.IsKillable(R.Range) && ComboMenu.CheckBoxValue(SpellSlot.R))
+                if (R.IsReady() && FullCombotarget.IsKillable(R.Range) && ComboMenu.CheckBoxValue(SpellSlot.R) && !(Q.IsReady() && W.IsReady() && E.IsReady()))
                 {
                     R.Cast(FullCombotarget);
                 }
@@ -450,7 +450,7 @@ namespace KappAIO.Champions.Syndra
         {
             if (W.Handle.ToggleState == 1)
             {
-                var pick = EntityManager.MinionsAndMonsters.CombinedAttackable.FirstOrDefault(m => m.IsValidTarget(W.Range) && m.Health > 5);
+                var pick = EntityManager.MinionsAndMonsters.CombinedAttackable.FirstOrDefault(m => m.IsValidTarget(W.Range) && m.Health > 5) ?? BallsList.FirstOrDefault(b => W.IsInRange(b));
                 if (pick != null)
                 {
                     W.Cast(pick);
@@ -466,7 +466,7 @@ namespace KappAIO.Champions.Syndra
         {
             if (W.Handle.ToggleState == 1)
             {
-                var pick = EntityManager.MinionsAndMonsters.CombinedAttackable.FirstOrDefault(m => m.IsValidTarget(W.Range) && m.Health > 5);
+                var pick = EntityManager.MinionsAndMonsters.CombinedAttackable.FirstOrDefault(m => m.IsValidTarget(W.Range) && m.Health > 5) ?? BallsList.FirstOrDefault(b => W.IsInRange(b));
                 if (pick != null)
                 {
                     W.Cast(pick);
