@@ -207,10 +207,12 @@ namespace KappAIO.Champions.Syndra
                     if (SelectBall(FullCombotarget) != null && E.IsInRange(SelectBall(FullCombotarget)))
                     {
                         Eball.Cast(SelectBall(FullCombotarget));
+                        return;
                     }
                     if (FullCombotarget.IsKillable(E.Range))
                     {
                         E.Cast(FullCombotarget, 25);
+                        return;
                     }
                 }
                 if (W.IsReady() && FullCombotarget.IsKillable(W.Range) && ComboMenu.CheckBoxValue(SpellSlot.W) && user.Mana >= W.Mana() + R.Mana())
@@ -226,6 +228,7 @@ namespace KappAIO.Champions.Syndra
             if (E.IsReady() && Etarget != null && SelectBall(Etarget) != null && E.IsInRange(SelectBall(Etarget)) && ComboMenu.CheckBoxValue(SpellSlot.E))
             {
                 Eball.Cast(SelectBall(Etarget));
+                return;
             }
 
             if (Etarget != null && Q.IsReady() && E.IsReady() && ComboMenu.CheckBoxValue("QE"))
@@ -237,18 +240,19 @@ namespace KappAIO.Champions.Syndra
             {
                 Q.Cast(Qtarget, 30);
             }
-
-            if (Wtarget != null && W.IsReady() && Wtarget.IsKillable(W.Range) && ComboMenu.CheckBoxValue(SpellSlot.W))
-            {
-                W.Cast(Wtarget);
-            }
-
+            
             if (Etarget != null && E.IsReady() && ComboMenu.CheckBoxValue(SpellSlot.E))
             {
                 if (Etarget.IsKillable(E.Range) && user.HealthPercent <= 20)
                 {
                     E.Cast(Etarget, 25);
+                    return;
                 }
+            }
+
+            if (Wtarget != null && W.IsReady() && Wtarget.IsKillable(W.Range) && ComboMenu.CheckBoxValue(SpellSlot.W))
+            {
+                W.Cast(Wtarget);
             }
 
             if (R.IsReady() && Rtarget != null && ComboMenu.CheckBoxValue(SpellSlot.R))

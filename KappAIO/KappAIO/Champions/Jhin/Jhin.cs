@@ -273,7 +273,7 @@ namespace KappAIO.Champions.Jhin
 
             if (Q.IsReady() && LaneClearMenu.CheckBoxValue(SpellSlot.Q) && LaneClearMenu.CompareSlider("Qmana", user.ManaPercent))
             {
-                var qminion = Q.LaneMinions().OrderByDescending(m => m.CountEnemyMinionsInRange(450)).FirstOrDefault(m => m.CountEnemyMinionsInRange(450) >= LaneClearMenu.SliderValue("Qhit"));
+                var qminion = Q.LaneMinions().OrderBy(m => m.Health / user.GetSpellDamage(m, SpellSlot.Q)).FirstOrDefault(m => m.CountEnemyMinionsInRange(450) >= LaneClearMenu.SliderValue("Qhit"));
                 if (qminion != null)
                 {
                     Q.Cast(qminion);
