@@ -160,7 +160,7 @@ namespace KappAIO.Champions.Syndra
             if(args.Slot == SpellSlot.W && W.Handle.ToggleState == 1)
                 args.Process = Core.GameTickCount - LastE > 150 + Game.Ping;
             if(args.Slot == SpellSlot.W)
-                args.Process = Core.GameTickCount - LastW > 100 + Game.Ping / 2;
+                args.Process = Core.GameTickCount - LastW > 100 + Game.Ping;
         }
 
         private static void Obj_AI_Base_OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
@@ -191,7 +191,7 @@ namespace KappAIO.Champions.Syndra
             {
                 Etarget = EntityManager.Heroes.Enemies.OrderByDescending(TargetSelector.GetPriority).FirstOrDefault(t => (BallsList.Any() ? BallsList.Any(b => b.IsInRange(t, Eball.Range) && E.IsInRange(b)) : t.IsKillable(1200)) && t.IsKillable());
             }
-            var FullCombotarget = EntityManager.Heroes.Enemies.OrderByDescending(TargetSelector.GetPriority).FirstOrDefault(e => ComboDamage(e, true) >= e.TotalShieldHealth() && e.IsKillable(R.Range));
+            var FullCombotarget = EntityManager.Heroes.Enemies.OrderByDescending(TargetSelector.GetPriority).FirstOrDefault(e => ComboDamage(e, true) >= e.Health && e.IsKillable(R.Range));
 
             if (W.Handle.ToggleState != 1 && Wtarget != null && W.IsReady() && Wtarget.IsKillable(W.Range))
             {
@@ -410,11 +410,11 @@ namespace KappAIO.Champions.Syndra
                 float x = obj.HPBarPosition.X;
                 float y = obj.HPBarPosition.Y;
                 dmg.Color = Color.White;
-                if (ComboDamage(obj, true) >= obj.TotalShieldHealth())
+                if (ComboDamage(obj, true) >= obj.Health)
                 {
                     dmg.Color = Color.Red;
                 }
-                dmg.TextValue = (int)ComboDamage(obj, true) + " / " + (int)obj.TotalShieldHealth();
+                dmg.TextValue = (int)ComboDamage(obj, true) + " / " + (int)obj.Health;
                 dmg.Position = new Vector2(x, y);
                 dmg.Draw();
             }
@@ -445,7 +445,7 @@ namespace KappAIO.Champions.Syndra
         {
             if (Q.IsReady() && E.IsReady() && user.Mana >= Q.Handle.SData.Mana + E.Handle.SData.Mana)
             {
-                var castpos = Q.GetPrediction(target).CastPosition;
+                var castpos = Eball.GetPrediction(target).CastPosition;
                 if(Q.Cast(Q.IsInRange(castpos) ? castpos : user.ServerPosition.Extend(castpos, E.Range).To3D()))
                 {
                     Eball.Cast(castpos);

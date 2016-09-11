@@ -1,1 +1,1 @@
-Fixed Syndra FPS !
+Reduce Syndra FPS Drops !

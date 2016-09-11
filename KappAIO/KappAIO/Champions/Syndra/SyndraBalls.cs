@@ -4,6 +4,7 @@ using System.Linq;
 using EloBuddy;
 using EloBuddy.SDK;
 using KappAIO.Common;
+using SharpDX;
 
 namespace KappAIO.Champions.Syndra
 {
@@ -25,16 +26,21 @@ namespace KappAIO.Champions.Syndra
 
         internal static List<Obj_AI_Minion> BallsList = new List<Obj_AI_Minion>();
 
-        private static Obj_AI_Minion theball;
         internal static Obj_AI_Minion SelectBall(Obj_AI_Base target)
         {
-            if (target == null || !Syndra.E.IsReady() || Core.GameTickCount - Lastupdate < 40 || !BallsList.Any(b => b.IsInRange(target, Syndra.Eball.Range) && Syndra.E.IsInRange(b)))
-                return theball;
-            
+            if (target == null || !Syndra.E.IsReady() || !BallsList.Any(b => b.IsInRange(target, Syndra.Eball.Range) && Syndra.E.IsInRange(b)))
+                return null;
+
             var CastPosition = Syndra.Q.GetPrediction(target).CastPosition;
-            foreach (var ball in BallsList.Where(b => b != null && Syndra.E.IsInRange(b)))
+            var source = Player.Instance.PrediectPosition(Game.Ping + Syndra.Eball.CastDelay);
+            var theball =
+                BallsList.FirstOrDefault(
+                    b =>
+                    Syndra.E.IsInRange(b)
+                    && new Geometry.Polygon.Rectangle(b.ServerPosition.Extend(source, 100).To3D(), source.Extend(b.ServerPosition, Syndra.Eball.Range).To3D(), Syndra.Eball.Width).IsInside(CastPosition));
+
+            /*foreach (var ball in BallsList.Where(b => b != null && Syndra.E.IsInRange(b)))
             {
-                var source = Player.Instance.PrediectPosition(Game.Ping + Syndra.Eball.CastDelay);
                 var start = ball.ServerPosition.Extend(source, 100).To3D();
                 var end = source.Extend(ball.ServerPosition, Syndra.Eball.Range).To3D();
                 var rect = new Geometry.Polygon.Rectangle(start, end, Syndra.Eball.Width);
@@ -42,23 +48,21 @@ namespace KappAIO.Champions.Syndra
                 {
                     theball = ball;
                 }
-            }
+            }*/
             return theball;
         }
-
-        private static float Lastdmgcalc;
+        
         internal static float ComboDamage(Obj_AI_Base target, bool R = false)
         {
-            if (target == null || Core.GameTickCount - Lastupdate < 100)
-                return Lastdmgcalc;
+            if (target == null)
+                return 0;
             
             var Qdmg = target.IsKillable(Syndra.Q.Range) ? Syndra.Q.IsReady() ? Player.Instance.GetSpellDamage(target, SpellSlot.Q) : 0 : 0;
             var Wdmg = target.IsKillable(Syndra.W.Range) ? Syndra.W.IsReady() ? Player.Instance.GetSpellDamage(target, SpellSlot.W) : 0 : 0;
             var Edmg = target.IsKillable(Syndra.E.Range) || SelectBall(target) != null ? Syndra.E.IsReady() ? Player.Instance.GetSpellDamage(target, SpellSlot.E) : 0 : 0;
             var Rdmg = target.IsKillable(Syndra.R.Range) ? Syndra.R.IsReady() ? R ? RDamage(target) : 0 : 0 : 0;
-
-            Lastdmgcalc = (Qdmg + Wdmg + Edmg + Rdmg) * 0.9f - target.HPRegenRate;
-            return Lastdmgcalc;
+            
+            return (Qdmg + Wdmg + Edmg + Rdmg) * 0.9f - target.HPRegenRate;
         }
 
         internal static float RDamage(Obj_AI_Base target)
