@@ -195,11 +195,11 @@ namespace KappAIO.Champions.Viktor
 
         public override void LaneClear()
         {
-            if (LaneClearMenu.CheckBoxValue(SpellSlot.E) && E.IsReady())
+            if (LaneClearMenu.CheckBoxValue(SpellSlot.E) && E.IsReady() && LaneClearMenu.CompareSlider("Emana", user.ManaPercent))
             {
                 ECast(false, LaneClearMenu.SliderValue("Ehits"));
             }
-            if (LaneClearMenu.CheckBoxValue(SpellSlot.Q) && Q.IsReady())
+            if (LaneClearMenu.CheckBoxValue(SpellSlot.Q) && Q.IsReady() && LaneClearMenu.CompareSlider("Qmana", user.ManaPercent))
             {
                 foreach (var mob in EntityManager.MinionsAndMonsters.EnemyMinions.Where(m => m.IsKillable(Q.Range) && Q.WillKill(m)))
                 {
@@ -211,7 +211,7 @@ namespace KappAIO.Champions.Viktor
 
         public override void JungleClear()
         {
-            if (JungleClearMenu.CheckBoxValue(SpellSlot.Q) && Q.IsReady())
+            if (JungleClearMenu.CheckBoxValue(SpellSlot.Q) && Q.IsReady() && JungleClearMenu.CompareSlider("Qmana", user.ManaPercent))
             {
                 foreach (var mob in EntityManager.MinionsAndMonsters.GetJungleMonsters().Where(m => m.IsKillable(Q.Range)))
                 {
@@ -219,7 +219,7 @@ namespace KappAIO.Champions.Viktor
                         Q.Cast(mob);
                 }
             }
-            if (JungleClearMenu.CheckBoxValue(SpellSlot.E) && E.IsReady())
+            if (JungleClearMenu.CheckBoxValue(SpellSlot.E) && E.IsReady() && JungleClearMenu.CompareSlider("Emana", user.ManaPercent))
             {
                 ECast(true);
             }

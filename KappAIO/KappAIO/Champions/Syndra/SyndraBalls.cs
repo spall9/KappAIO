@@ -9,20 +9,28 @@ namespace KappAIO.Champions.Syndra
 {
     internal static class SyndraBalls
     {
-        internal static IEnumerable<Obj_AI_Minion> BallsList
+        private static float Lastupdate;
+        internal static void Init()
         {
-            get
-            {
-                return ObjectManager.Get<Obj_AI_Minion>().Where(o => o != null && !o.IsDead && o.IsValid && o.Health > 0 && o.BaseSkinName.Equals("SyndraSphere"));
-            }
+            Game.OnTick += delegate
+                {
+                    if (Core.GameTickCount - Lastupdate > 100)
+                    {
+                        BallsList.AddRange(ObjectManager.Get<Obj_AI_Minion>().Where(o => o != null && !o.IsDead && o.IsValid && o.Health > 0 && o.BaseSkinName.Equals("SyndraSphere")));
+                        BallsList.RemoveAll(b => b == null || b.IsDead || !b.IsValid);
+                        Lastupdate = Core.GameTickCount;
+                    }
+                };
         }
 
+        internal static List<Obj_AI_Minion> BallsList = new List<Obj_AI_Minion>();
+
+        private static Obj_AI_Minion theball;
         internal static Obj_AI_Minion SelectBall(Obj_AI_Base target)
         {
-            if (target == null)
-                return null;
-
-            Obj_AI_Minion theball = null;
+            if (target == null || !Syndra.E.IsReady() || Core.GameTickCount - Lastupdate < 40 || !BallsList.Any(b => b.IsInRange(target, Syndra.Eball.Range) && Syndra.E.IsInRange(b)))
+                return theball;
+            
             var CastPosition = Syndra.Q.GetPrediction(target).CastPosition;
             foreach (var ball in BallsList.Where(b => b != null && Syndra.E.IsInRange(b)))
             {
@@ -38,18 +46,19 @@ namespace KappAIO.Champions.Syndra
             return theball;
         }
 
+        private static float Lastdmgcalc;
         internal static float ComboDamage(Obj_AI_Base target, bool R = false)
         {
-            if (target == null)
-                return 0;
-
-            var AAdmg = Player.Instance.IsInAutoAttackRange(target) ? Player.Instance.GetAutoAttackDamage(target) : 0;
+            if (target == null || Core.GameTickCount - Lastupdate < 100)
+                return Lastdmgcalc;
+            
             var Qdmg = target.IsKillable(Syndra.Q.Range) ? Syndra.Q.IsReady() ? Player.Instance.GetSpellDamage(target, SpellSlot.Q) : 0 : 0;
             var Wdmg = target.IsKillable(Syndra.W.Range) ? Syndra.W.IsReady() ? Player.Instance.GetSpellDamage(target, SpellSlot.W) : 0 : 0;
-            var Edmg = (target.IsKillable(Syndra.E.Range) || SelectBall(target) != null) ? Syndra.E.IsReady() ? Player.Instance.GetSpellDamage(target, SpellSlot.E) : 0 : 0;
+            var Edmg = target.IsKillable(Syndra.E.Range) || SelectBall(target) != null ? Syndra.E.IsReady() ? Player.Instance.GetSpellDamage(target, SpellSlot.E) : 0 : 0;
             var Rdmg = target.IsKillable(Syndra.R.Range) ? Syndra.R.IsReady() ? R ? RDamage(target) : 0 : 0 : 0;
 
-            return (AAdmg + Qdmg + Wdmg + Edmg + Rdmg) - target.HPRegenRate;
+            Lastdmgcalc = (Qdmg + Wdmg + Edmg + Rdmg) * 0.9f - target.HPRegenRate;
+            return Lastdmgcalc;
         }
 
         internal static float RDamage(Obj_AI_Base target)
@@ -63,7 +72,7 @@ namespace KappAIO.Champions.Syndra
             var maxdmg = new float[] { 630, 975, 1260 }[index] + 1.4f * ap;
             var perballdmg = (new float[] { 90, 135, 180 }[index] + 0.2f * ap) * BallsList.Count();
 
-            return Player.Instance.CalculateDamageOnUnit(target, DamageType.Magical, Math.Max(mindmg, maxdmg) + perballdmg) - 15;
+            return Player.Instance.CalculateDamageOnUnit(target, DamageType.Magical, Math.Max(mindmg, maxdmg) + perballdmg) * 0.9f;
         }
     }
 }

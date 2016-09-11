@@ -27,12 +27,13 @@ namespace KappAIO.Champions.Syndra
 
         static Syndra()
         {
+            Init();
             dmg = new Text(string.Empty, new Font("Tahoma", 9, FontStyle.Bold)) { Color = Color.White };
             Q = new Spell.Skillshot(SpellSlot.Q, 810, SkillShotType.Circular, 600, int.MaxValue, 125) { AllowedCollisionCount = int.MaxValue, DamageType = DamageType.Magical };
             W = new Spell.Skillshot(SpellSlot.W, 1000, SkillShotType.Circular, 350, 1500, 140) { AllowedCollisionCount = int.MaxValue, DamageType = DamageType.Magical };
             E = new Spell.Skillshot(SpellSlot.E, 680, SkillShotType.Cone, 250, 2500, 50) { AllowedCollisionCount = int.MaxValue, DamageType = DamageType.Magical };
             R = new Spell.Targeted(SpellSlot.R, 680);
-            Eball = new Spell.Skillshot(SpellSlot.E, 1100, SkillShotType.Linear, 600, 2400, 80) { AllowedCollisionCount = int.MaxValue, DamageType = DamageType.Magical };
+            Eball = new Spell.Skillshot(SpellSlot.E, 1100, SkillShotType.Linear, 600, 2400, 40) { AllowedCollisionCount = int.MaxValue, DamageType = DamageType.Magical };
 
             SpellList.Add(Q);
             SpellList.Add(W);
@@ -81,6 +82,7 @@ namespace KappAIO.Champions.Syndra
             KillStealMenu.CreateCheckBox("QE", "QE KillSteal");
 
             DrawMenu.CreateCheckBox("dmg", "Draw Combo Damage");
+            DrawMenu.CreateCheckBox("balls", "Draw Balls");
 
             MenuList.Add(HarassMenu);
             MenuList.Add(LaneClearMenu);
@@ -184,7 +186,7 @@ namespace KappAIO.Champions.Syndra
             var Qtarget = Q.GetTarget();
             var Wtarget = W.GetTarget();
             var Etarget = E.GetTarget();
-            var Rtarget = EntityManager.Heroes.Enemies.OrderByDescending(TargetSelector.GetPriority).FirstOrDefault(t => t.IsKillable(R.Range) && RDamage(t) >= t.TotalShieldHealth());
+            //var Rtarget = EntityManager.Heroes.Enemies.OrderByDescending(TargetSelector.GetPriority).FirstOrDefault(t => t.IsKillable(R.Range) && RDamage(t) >= t.TotalShieldHealth());
             if (SelectBall(Etarget) == null)
             {
                 Etarget = EntityManager.Heroes.Enemies.OrderByDescending(TargetSelector.GetPriority).FirstOrDefault(t => (BallsList.Any() ? BallsList.Any(b => b.IsInRange(t, Eball.Range) && E.IsInRange(b)) : t.IsKillable(1200)) && t.IsKillable());
@@ -253,11 +255,6 @@ namespace KappAIO.Champions.Syndra
             if (Wtarget != null && W.IsReady() && Wtarget.IsKillable(W.Range) && ComboMenu.CheckBoxValue(SpellSlot.W))
             {
                 W.Cast(Wtarget);
-            }
-
-            if (R.IsReady() && Rtarget != null && ComboMenu.CheckBoxValue(SpellSlot.R))
-            {
-                R.Cast(Rtarget);
             }
         }
 
@@ -421,16 +418,22 @@ namespace KappAIO.Champions.Syndra
                 dmg.Position = new Vector2(x, y);
                 dmg.Draw();
             }
-            /*
-            foreach (var ball in BallsList.Where(b => b != null && E.IsInRange(b)))
+            
+            if (DrawMenu.CheckBoxValue("balls"))
             {
-                Circle.Draw(SharpDX.Color.AliceBlue, 100, ball);
+                foreach (var ball in BallsList.Where(b => b != null && E.IsInRange(b)))
+                {
+                    Circle.Draw(SharpDX.Color.AliceBlue, ball.BoundingRadius + 25, ball);
 
-                var start = ball.ServerPosition.Extend(user.ServerPosition, 100).To3D();
-                var end = user.ServerPosition.Extend(ball.ServerPosition, Eball.Range).To3D();
+                    if (E.IsReady())
+                    {
+                        var start = ball.ServerPosition.Extend(user.ServerPosition, 100).To3D();
+                        var end = user.ServerPosition.Extend(ball.ServerPosition, Eball.Range).To3D();
 
-                new Geometry.Polygon.Rectangle(start, end, Eball.Width).Draw(Color.AliceBlue);
-            }*/
+                        new Geometry.Polygon.Rectangle(start, end, Eball.Width).Draw(Color.AliceBlue);
+                    }
+                }
+            }
 
             foreach (var spell in SpellList.Where(s => DrawMenu.CheckBoxValue(s.Slot)))
             {
