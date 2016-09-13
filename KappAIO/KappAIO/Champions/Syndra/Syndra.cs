@@ -22,15 +22,15 @@ namespace KappAIO.Champions.Syndra
         public static Spell.Targeted R { get; set; }
 
         private static Text dmg;
-        private static float LastE;
         private static float LastW;
+        private static float LastQE;
 
         static Syndra()
         {
             Init();
             dmg = new Text(string.Empty, new Font("Tahoma", 9, FontStyle.Bold)) { Color = Color.White };
             Q = new Spell.Skillshot(SpellSlot.Q, 810, SkillShotType.Circular, 600, int.MaxValue, 125) { AllowedCollisionCount = int.MaxValue, DamageType = DamageType.Magical };
-            W = new Spell.Skillshot(SpellSlot.W, 1000, SkillShotType.Circular, 350, 1500, 140) { AllowedCollisionCount = int.MaxValue, DamageType = DamageType.Magical };
+            W = new Spell.Skillshot(SpellSlot.W, 900, SkillShotType.Circular, 350, 1500, 140) { AllowedCollisionCount = int.MaxValue, DamageType = DamageType.Magical };
             E = new Spell.Skillshot(SpellSlot.E, 680, SkillShotType.Cone, 250, 2500, 50) { AllowedCollisionCount = int.MaxValue, DamageType = DamageType.Magical };
             R = new Spell.Targeted(SpellSlot.R, 680);
             Eball = new Spell.Skillshot(SpellSlot.E, 1100, SkillShotType.Linear, 600, 2400, 40) { AllowedCollisionCount = int.MaxValue, DamageType = DamageType.Magical };
@@ -87,8 +87,7 @@ namespace KappAIO.Champions.Syndra
             MenuList.Add(HarassMenu);
             MenuList.Add(LaneClearMenu);
             MenuList.Add(JungleClearMenu);
-
-            Obj_AI_Base.OnProcessSpellCast += Obj_AI_Base_OnProcessSpellCast;
+            
             Spellbook.OnCastSpell += Spellbook_OnCastSpell;
             Gapcloser.OnGapcloser += Gapcloser_OnGapcloser;
             Interrupter.OnInterruptableSpell += Interrupter_OnInterruptableSpell;
@@ -97,7 +96,7 @@ namespace KappAIO.Champions.Syndra
 
         private static void Orbwalker_OnUnkillableMinion(Obj_AI_Base target, Orbwalker.UnkillableMinionArgs args)
         {
-            if (W.IsReady() && W.WillKill(target) && target.IsKillable(W.Range) && AutoMenu.CheckBoxValue("Wunk"))
+            if (W.IsReady() && W.WillKill(target) && target.IsKillable(W.Range) && AutoMenu.CheckBoxValue("Wunk") && !Orbwalker.ActiveModesFlags.HasFlag(Orbwalker.ActiveModes.Combo))
             {
                 W.Cast(target);
             }
@@ -157,20 +156,16 @@ namespace KappAIO.Champions.Syndra
         {
             if (!sender.Owner.IsMe) return;
 
-            if(args.Slot == SpellSlot.W && W.Handle.ToggleState == 1)
-                args.Process = Core.GameTickCount - LastE > 150 + Game.Ping;
-            if(args.Slot == SpellSlot.W)
-                args.Process = Core.GameTickCount - LastW > 100 + Game.Ping;
-        }
-
-        private static void Obj_AI_Base_OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
-        {
-            if (!sender.IsMe) return;
-
-            if(args.Slot == SpellSlot.E)
-                LastE = Core.GameTickCount;
+            if (args.Slot == SpellSlot.Q || args.Slot == SpellSlot.E)
+                LastQE = Core.GameTickCount;
             if (args.Slot == SpellSlot.W)
-                LastW = Core.GameTickCount;
+            {
+                if (W.Handle.ToggleState == 1)
+                {
+                    LastW = Core.GameTickCount;
+                }
+                args.Process = Core.GameTickCount - LastQE > 400 + Game.Ping && Core.GameTickCount - LastW > 300 + Game.Ping;
+            }
         }
 
         public override void Active()
@@ -445,7 +440,7 @@ namespace KappAIO.Champions.Syndra
         {
             if (Q.IsReady() && E.IsReady() && user.Mana >= Q.Handle.SData.Mana + E.Handle.SData.Mana)
             {
-                var castpos = Eball.GetPrediction(target).CastPosition;
+                var castpos = Q.GetPrediction(target).CastPosition;
                 if(Q.Cast(Q.IsInRange(castpos) ? castpos : user.ServerPosition.Extend(castpos, E.Range).To3D()))
                 {
                     Eball.Cast(castpos);
