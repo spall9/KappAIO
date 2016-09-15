@@ -15,8 +15,8 @@ namespace KappAIO
 
         private static void Loading_OnLoadingComplete(EventArgs args)
         {
-            Utility.Load.Init();
-            if(Utility.Activator.Load.MenuIni.CheckBoxValue("Champ")) return;
+            //Utility.Load.Init();
+            //if(Utility.Activator.Load.MenuIni.CheckBoxValue("Champ")) return;
             try
             {
                 var Instance = (Base)Activator.CreateInstance(null, "KappAIO.Champions." + Player.Instance.Hero + "." + Player.Instance.Hero).Unwrap();

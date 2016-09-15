@@ -357,11 +357,19 @@ namespace KappAIO.Common
         }
 
         /// <summary>
+        ///     Returns true if the target will die before the spell finish him.
+        /// </summary>
+        public static bool WillDie(this Obj_AI_Base target, Spell.SpellBase spell)
+        {
+            return spell.GetHealthPrediction(target) <= 0;
+        }
+
+        /// <summary>
         ///     Returns true if the spell will kill the target.
         /// </summary>
         public static bool WillKill(this Spell.SpellBase spell, Obj_AI_Base target, float MultiplyDmgBy = 1, float ExtraDamage = 0, DamageType ExtraDamageType = DamageType.True)
         {
-            return Player.Instance.GetSpellDamage(target, spell.Slot) * MultiplyDmgBy + Player.Instance.CalculateDamageOnUnit(target, ExtraDamageType, ExtraDamage) >= spell.GetHealthPrediction(target);
+            return Player.Instance.GetSpellDamage(target, spell.Slot) * MultiplyDmgBy + Player.Instance.CalculateDamageOnUnit(target, ExtraDamageType, ExtraDamage) >= spell.GetHealthPrediction(target) && !target.WillDie(spell);
         }
 
         /// <summary>
