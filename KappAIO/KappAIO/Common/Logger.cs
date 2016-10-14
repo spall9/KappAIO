@@ -11,7 +11,7 @@ namespace KappAIO.Common
             Warn
         }
 
-        public static bool Send(string str, LogLevel level)
+        public static bool Send(string str, LogLevel level = LogLevel.Info)
         {
             var date = DateTime.Now.ToString("[H:mm:ss - ") + "KappAIO ";
             var text = string.Empty;

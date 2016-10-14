@@ -277,6 +277,18 @@ namespace KappAIO.Common
         }
 
         /// <summary>
+        ///     Returns a recreated name of the target.
+        /// </summary>
+        public static string Name(this Obj_AI_Base target)
+        {
+            if (ObjectManager.Get<Obj_AI_Base>().Count(o => o.BaseSkinName.Equals(target.BaseSkinName)) > 1)
+            {
+                return target.BaseSkinName + "(" + target.Name + ")";
+            }
+            return target.BaseSkinName;
+        }
+
+        /// <summary>
         ///     Creates a checkbox.
         /// </summary>
         public static CheckBox CreateCheckBox(this Menu m, string id, string name, bool defaultvalue = true)

@@ -7,12 +7,27 @@ namespace KappAIO.Champions.Jhin
 {
     internal static class JhinStuff
     {
+        internal class StalkEnemies
+        {
+            public AIHeroClient Target;
+            public Vector3 PredictedPosition;
+            public float LastVisibleTime;
+
+            public StalkEnemies(AIHeroClient t, float LVT, Vector3 pos)
+            {
+                this.Target = t;
+                this.LastVisibleTime = LVT;
+                this.PredictedPosition = pos;
+            }
+        }
+
+        internal static string CirticalAA = "jhinpassiveattackbuff";
         internal static string FirstR = "JhinR";
         internal static string JhinEBuffName = "JhinESpottedDebuff";
 
         internal static bool HasJhinEBuff(this AIHeroClient target)
         {
-            var traveltime = Player.Instance.Distance(target) / Jhin.W.Speed * 1000 + Jhin.W.CastDelay + Game.Ping;
+            var traveltime = Player.Instance.Distance(target) / Jhin.W.Speed * 1000 + Jhin.W.CastDelay + Game.Ping / 2f;
             var buff = target.GetBuff(JhinEBuffName);
             return buff != null && !target.HasBuffOfType(BuffType.SpellShield) && buff.IsActive && (buff.EndTime - Game.Time) * 1000 >= traveltime;
         }
@@ -26,14 +41,14 @@ namespace KappAIO.Champions.Jhin
             var MHADP = 1 + (100 - target.HealthPercent) * 0.025f;
 
             var mindmg = (MinRDmg + 0.2f * Player.Instance.TotalAttackDamage) * MHADP;
-            var maxdmg = MaxRDmg + 0.7f * Player.Instance.TotalAttackDamage;
+            var maxdmg = (MaxRDmg + 0.7f * Player.Instance.TotalAttackDamage) * MHADP;
             
             return Player.Instance.CalculateDamageOnUnit(target, DamageType.Physical, Math.Min(mindmg, maxdmg));
         }
 
         private static float FinalJhinRDamage(Obj_AI_Base target)
         {
-            return JhinRDamage(target) * 2f * Player.Instance.FlatCritChanceMod;
+            return JhinRDamage(target) * 2.5f * (Player.Instance.FlatCritChanceMod + 1);
         }
 
         internal static float TotalRDamage(Obj_AI_Base target)

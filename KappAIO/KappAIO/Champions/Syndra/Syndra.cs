@@ -305,7 +305,7 @@ namespace KappAIO.Champions.Syndra
         {
             if (Q.IsReady() && LaneClearMenu.CheckBoxValue(SpellSlot.Q) && LaneClearMenu.CompareSlider("Qmana", user.ManaPercent))
             {
-                var qminions = EntityManager.MinionsAndMonsters.GetCircularFarmLocation(Q.LaneMinions(), Q.Width * 2, (int)Q.Range, Q.CastDelay, Q.Speed);
+                var qminions = Q.GetBestCircularCastPosition(Q.LaneMinions());
                 if (qminions.HitNumber >= LaneClearMenu.SliderValue("Qhit"))
                 {
                     Q.Cast(qminions.CastPosition);
@@ -314,7 +314,7 @@ namespace KappAIO.Champions.Syndra
 
             if (W.IsReady() && LaneClearMenu.CheckBoxValue(SpellSlot.W) && LaneClearMenu.CompareSlider("Wmana", user.ManaPercent))
             {
-                var wminions = EntityManager.MinionsAndMonsters.GetCircularFarmLocation(W.LaneMinions(), W.Width * 2, (int)W.Range, W.CastDelay, W.Speed);
+                var wminions = W.GetBestCircularCastPosition(W.LaneMinions());
                 if (wminions.HitNumber + 1 >= LaneClearMenu.SliderValue("Whit"))
                 {
                     WCast(wminions.CastPosition);
@@ -325,7 +325,7 @@ namespace KappAIO.Champions.Syndra
             {
                 foreach (var ball in BallsList)
                 {
-                    var Eminions = EntityManager.MinionsAndMonsters.GetLineFarmLocation(Eball.LaneMinions(), Eball.Width, (int)Eball.Range, ball.ServerPosition.Extend(user, 100));
+                    var Eminions = Eball.GetBestLinearCastPosition(Eball.LaneMinions(), 0, ball.ServerPosition.Extend(user, 100));
                     if (Eminions.HitNumber >= LaneClearMenu.SliderValue("Ehit"))
                     {
                         Eball.Cast(ball.ServerPosition);
