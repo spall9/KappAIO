@@ -38,17 +38,6 @@ namespace KappAIO.Champions.Syndra
                     b =>
                     Syndra.E.IsInRange(b)
                     && new Geometry.Polygon.Rectangle(b.ServerPosition.Extend(source, 100).To3D(), source.Extend(b.ServerPosition, Syndra.Eball.Range).To3D(), Syndra.Eball.Width).IsInside(CastPosition));
-
-            /*foreach (var ball in BallsList.Where(b => b != null && Syndra.E.IsInRange(b)))
-            {
-                var start = ball.ServerPosition.Extend(source, 100).To3D();
-                var end = source.Extend(ball.ServerPosition, Syndra.Eball.Range).To3D();
-                var rect = new Geometry.Polygon.Rectangle(start, end, Syndra.Eball.Width);
-                if (rect.IsInside(CastPosition))
-                {
-                    theball = ball;
-                }
-            }*/
             return theball;
         }
         
@@ -74,7 +63,7 @@ namespace KappAIO.Champions.Syndra
             var index = Player.GetSpell(SpellSlot.R).Level - 1;
             var mindmg = new float[] { 270, 405, 540 }[index] + 0.6f * ap;
             var maxdmg = new float[] { 630, 975, 1260 }[index] + 1.4f * ap;
-            var perballdmg = (new float[] { 90, 135, 180 }[index] + 0.2f * ap) * BallsList.Count();
+            var perballdmg = (new float[] { 90, 135, 180 }[index] + 0.2f * ap) * Syndra.R.AmmoQuantity;
 
             return Player.Instance.CalculateDamageOnUnit(target, DamageType.Magical, Math.Max(mindmg, maxdmg) + perballdmg) * 0.9f;
         }

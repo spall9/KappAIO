@@ -154,17 +154,19 @@ namespace KappAIO.Champions.Syndra
 
         private static void Spellbook_OnCastSpell(Spellbook sender, SpellbookCastSpellEventArgs args)
         {
-            if (!sender.Owner.IsMe) return;
+            if (!sender.Owner.IsMe)
+                return;
 
             if (args.Slot == SpellSlot.Q || args.Slot == SpellSlot.E)
                 LastQE = Core.GameTickCount;
+
             if (args.Slot == SpellSlot.W)
             {
                 if (W.Handle.ToggleState == 1)
                 {
                     LastW = Core.GameTickCount;
                 }
-                args.Process = Core.GameTickCount - LastQE > 400 + Game.Ping && Core.GameTickCount - LastW > 300 + Game.Ping;
+                args.Process = Core.GameTickCount - LastQE > 250 + Game.Ping && Core.GameTickCount - LastW > 300 + Game.Ping;
             }
         }
 
@@ -190,7 +192,7 @@ namespace KappAIO.Champions.Syndra
 
             if (W.Handle.ToggleState != 1 && Wtarget != null && W.IsReady() && Wtarget.IsKillable(W.Range))
             {
-                W.Cast(Wtarget);
+                WCast(Wtarget);
             }
 
             if (FullCombotarget != null && FullCombotarget.IsKillable())
@@ -221,7 +223,7 @@ namespace KappAIO.Champions.Syndra
                     R.Cast(FullCombotarget);
                 }
             }
-
+            
             if (E.IsReady() && Etarget != null && SelectBall(Etarget) != null && E.IsInRange(SelectBall(Etarget)) && ComboMenu.CheckBoxValue(SpellSlot.E))
             {
                 Eball.Cast(SelectBall(Etarget));
@@ -231,6 +233,12 @@ namespace KappAIO.Champions.Syndra
             if (Etarget != null && Q.IsReady() && E.IsReady() && ComboMenu.CheckBoxValue("QE"))
             {
                 QE(Etarget);
+                return;
+            }
+
+            if (Wtarget != null && W.IsReady() && Wtarget.IsKillable(W.Range) && ComboMenu.CheckBoxValue(SpellSlot.W))
+            {
+                WCast(Wtarget);
             }
 
             if (Qtarget != null && Q.IsReady() && Qtarget.IsKillable(Q.Range) && ComboMenu.CheckBoxValue(SpellSlot.Q))
@@ -243,13 +251,7 @@ namespace KappAIO.Champions.Syndra
                 if (Etarget.IsKillable(E.Range) && user.HealthPercent <= 20)
                 {
                     E.Cast(Etarget, 25);
-                    return;
                 }
-            }
-
-            if (Wtarget != null && W.IsReady() && Wtarget.IsKillable(W.Range) && ComboMenu.CheckBoxValue(SpellSlot.W))
-            {
-                W.Cast(Wtarget);
             }
         }
 
