@@ -162,13 +162,13 @@ namespace KappAIO.Champions.Syndra
 
             if (args.Slot == SpellSlot.W)
             {
-                if (Core.GameTickCount - LastQE > 250 + Game.Ping && Core.GameTickCount - LastW > 300 + Game.Ping)
-                {
-                    args.Process = false;
-                }
                 if (W.Handle.ToggleState == 1)
                 {
                     LastW = Core.GameTickCount;
+                }
+                if (Core.GameTickCount - LastQE < 250 + Game.Ping && Core.GameTickCount - LastW < 400 + Game.Ping)
+                {
+                    args.Process = false;
                 }
             }
         }

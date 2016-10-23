@@ -51,7 +51,7 @@ namespace KappAIO.Champions.Syndra
             var Edmg = target.IsKillable(Syndra.E.Range) || SelectBall(target) != null ? Syndra.E.IsReady() ? Player.Instance.GetSpellDamage(target, SpellSlot.E) : 0 : 0;
             var Rdmg = target.IsKillable(Syndra.R.Range) ? Syndra.R.IsReady() ? R ? RDamage(target) : 0 : 0 : 0;
             
-            return (Qdmg + Wdmg + Edmg + Rdmg) * 0.9f - target.HPRegenRate;
+            return (Qdmg + Wdmg + Edmg + Rdmg) * 0.8f - target.HPRegenRate;
         }
 
         internal static float RDamage(Obj_AI_Base target)
@@ -65,7 +65,7 @@ namespace KappAIO.Champions.Syndra
             var maxdmg = new float[] { 630, 975, 1260 }[index] + 1.4f * ap;
             var perballdmg = (new float[] { 90, 135, 180 }[index] + 0.2f * ap) * Syndra.R.AmmoQuantity;
 
-            return Player.Instance.CalculateDamageOnUnit(target, DamageType.Magical, Math.Max(mindmg, maxdmg) + perballdmg) * 0.9f;
+            return Player.Instance.CalculateDamageOnUnit(target, DamageType.Magical, Math.Max(mindmg, maxdmg) + perballdmg) * 0.8f;
         }
     }
 }
