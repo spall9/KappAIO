@@ -63,6 +63,8 @@
     <Compile Include="Champions\Jhin\JhinStuff.cs" />
     <Compile Include="Champions\Kalista\Kalista.cs" />
     <Compile Include="Champions\Kalista\Rend.cs" />
+    <Compile Include="Champions\Sion\Sion.cs" />
+    <Compile Include="Champions\Sion\Stuff.cs" />
     <Compile Include="Champions\Syndra\Syndra.cs" />
     <Compile Include="Champions\Syndra\SyndraBalls.cs" />
     <Compile Include="Champions\Viktor\Vectors.cs" />
