@@ -76,7 +76,7 @@ namespace KappAIO.Champions.Viktor
             rectlist.Clear();
             Vector3 Start;
             Vector3 End;
-            var mobs = EntityManager.MinionsAndMonsters.EnemyMinions.OrderBy(o => o.Health).Where(e => e.IsKillable(Viktor.E.Range));
+            var mobs = EntityManager.Enemies.OrderBy(o => o.Health).Where(e => e.IsKillable(Viktor.E.Range));
 
             if (Jungle)
             {
@@ -87,7 +87,7 @@ namespace KappAIO.Champions.Viktor
             {
                 var predmob = Viktor.E.GetPrediction(A);
                 Start = predmob.CastPosition.Distance(Player.Instance) > 525 ? Player.Instance.ServerPosition.Extend(predmob.CastPosition, 525).To3D() : A.ServerPosition;
-                var mobs2 = EntityManager.MinionsAndMonsters.EnemyMinions.OrderBy(o => o.Health).Where(e => e.IsKillable(Viktor.E.Range) && e.NetworkId != A.NetworkId && e.IsInRange(A, 600));
+                var mobs2 = EntityManager.Enemies.OrderBy(o => o.Health).Where(e => e.IsKillable(Viktor.E.Range) && e.NetworkId != A.NetworkId && e.IsInRange(A, 600));
                 if (Jungle)
                 {
                     mobs2 = EntityManager.MinionsAndMonsters.GetJungleMonsters().OrderBy(o => o.MaxHealth).Where(e => e.IsKillable(Viktor.E.Range) && e.NetworkId != A.NetworkId && e.IsInRange(A, 600));
@@ -100,7 +100,7 @@ namespace KappAIO.Champions.Viktor
                 }
             }
 
-            var bestpos = rectlist.OrderByDescending(r => EntityManager.MinionsAndMonsters.EnemyMinions.OrderBy(o => o.Health).Count(m => r.IsInside(m) && m.IsKillable(Viktor.E.Range))).FirstOrDefault();
+            var bestpos = rectlist.OrderByDescending(r => EntityManager.Enemies.OrderBy(o => o.Health).Count(m => r.IsInside(m) && m.IsKillable(Viktor.E.Range))).FirstOrDefault();
             if (Jungle)
             {
                 bestpos = rectlist.OrderByDescending(r => EntityManager.MinionsAndMonsters.GetJungleMonsters().OrderBy(o => o.MaxHealth).Count(m => r.IsInside(m) && m.IsKillable(Viktor.E.Range))).FirstOrDefault();
@@ -108,7 +108,7 @@ namespace KappAIO.Champions.Viktor
 
             if (bestpos != null)
             {
-                var mobs3 = EntityManager.MinionsAndMonsters.EnemyMinions.OrderBy(o => o.Health).Count(m => bestpos.IsInside(m) && m.IsKillable(Viktor.E.Range));
+                var mobs3 = EntityManager.Enemies.OrderBy(o => o.Health).Count(m => bestpos.IsInside(m) && m.IsKillable(Viktor.E.Range));
                 if (Jungle)
                 {
                     mobs3 = EntityManager.MinionsAndMonsters.GetJungleMonsters().OrderBy(o => o.MaxHealth).Count(m => bestpos.IsInside(m) && m.IsKillable(Viktor.E.Range));

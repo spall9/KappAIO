@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using EloBuddy;
 using EloBuddy.SDK;
 using EloBuddy.SDK.Enumerations;
@@ -13,11 +14,14 @@ namespace KappAIO.Champions.Viktor
 {
     internal class Viktor : Base
     {
+        private static string ViktorBaseRName = "ViktorChaosStorm";
+        private static Obj_GeneralParticleEmitter ViktorRObj;
+
         private static bool IsCastingR
         {
             get
             {
-                return user.HasBuff("ViktorChaosStormTimer");
+                return user.HasBuff("ViktorChaosStormTimer") || (!R.Name.Equals(ViktorBaseRName) && ViktorRObj != null);
             }
         }
 
@@ -71,16 +75,36 @@ namespace KappAIO.Champions.Viktor
             AutoMenu.CreateCheckBox("IntW", "Auto W Interrupter");
             AutoMenu.CreateCheckBox("IntR", "Auto R Interrupter");
             AutoMenu.CreateCheckBox("Qunk", "Auto Q UnKillable Minions");
+            AutoMenu.CreateCheckBox("Qfleek", "Auto Q Flee");
 
             ComboMenu.CreateSlider("RAOE", "R AoE Hit Count {0}", 2, 1, 6);
             ComboMenu.CreateSlider("RMulti", "Mutilply R Damage By X{0} Times", 3, 1, 10);
 
             LaneClearMenu.CreateSlider("Ehits", "E Hit Count {0}", 3, 1, 20);
-
-            Obj_AI_Base.OnProcessSpellCast += Obj_AI_Base_OnProcessSpellCast;
+            
             Interrupter.OnInterruptableSpell += Interrupter_OnInterruptableSpell;
             Gapcloser.OnGapcloser += Gapcloser_OnGapcloser;
             Orbwalker.OnUnkillableMinion += Orbwalker_OnUnkillableMinion;
+            GameObject.OnCreate += GameObject_OnCreate;
+            GameObject.OnDelete += GameObject_OnDelete;
+        }
+
+        private static void GameObject_OnDelete(GameObject sender, EventArgs args)
+        {
+            var create = sender as Obj_GeneralParticleEmitter;
+            if (create != null && create.Name.Equals("Viktor_ChaosStorm_green.troy", StringComparison.CurrentCultureIgnoreCase))
+            {
+                ViktorRObj = null;
+            }
+        }
+
+        private static void GameObject_OnCreate(GameObject sender, EventArgs args)
+        {
+            var create = sender as Obj_GeneralParticleEmitter;
+            if (create != null && create.Name.Equals("Viktor_ChaosStorm_green.troy", StringComparison.CurrentCultureIgnoreCase))
+            {
+                ViktorRObj = create;
+            }
         }
 
         private static void Orbwalker_OnUnkillableMinion(Obj_AI_Base target, Orbwalker.UnkillableMinionArgs args)
@@ -112,20 +136,13 @@ namespace KappAIO.Champions.Viktor
                 R.Cast(sender);
             }
         }
-
-        private static void Obj_AI_Base_OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
-        {
-            if (sender.IsMe && args.Slot == SpellSlot.Q) Orbwalker.ResetAutoAttack();
-        }
-
-        private static float LastCommand;
+        
         public override void Active()
         {
-            var target = TargetSelector.GetTarget(1250, DamageType.Magical) ?? EntityManager.Heroes.Enemies.OrderBy(e => e.Distance(Game.CursorPos)).FirstOrDefault(e => e.IsKillable());
-            if (IsCastingR  && target != null && Core.GameTickCount - LastCommand > 100)
+            var target = TargetSelector.GetTarget(1250, DamageType.Magical) ?? EntityManager.Heroes.Enemies.OrderBy(e => e.Distance(ViktorRObj?.Position ?? Game.CursorPos)).FirstOrDefault(e => e.IsKillable());
+            if (IsCastingR  && target != null)
             {
                 R.Cast(target);
-                LastCommand = Core.GameTickCount;
             }
         }
 
@@ -171,6 +188,12 @@ namespace KappAIO.Champions.Viktor
 
         public override void Flee()
         {
+            if (AutoMenu.CheckBoxValue("Qfleek"))
+            {
+                var target = Q.GetTarget();
+                if (target.IsKillable())
+                    Q.Cast(target);
+            }
         }
 
         public override void Harass()
