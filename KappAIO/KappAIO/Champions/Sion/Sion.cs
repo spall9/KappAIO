@@ -31,7 +31,7 @@ namespace KappAIO.Champions.Sion
         {
             Q = new Spell.Skillshot(SpellSlot.Q, 740, SkillShotType.Linear, 250, int.MaxValue, 200, DamageType.Physical) {AllowedCollisionCount = int.MaxValue};
             W = new Spell.Active(SpellSlot.W, 500);
-            E = new Spell.Skillshot(SpellSlot.E, 750, SkillShotType.Linear, 250, 1000, 70) { AllowedCollisionCount = -1 };
+            E = new Spell.Skillshot(SpellSlot.E, 750, SkillShotType.Linear, 250, 1250, 70) { AllowedCollisionCount = -1 };
             R = new Spell.Skillshot(SpellSlot.R, 850, SkillShotType.Linear, 250, 950, 300) { AllowedCollisionCount = -1 };
             SpellList.Add(Q);
             SpellList.Add(E);
@@ -56,6 +56,7 @@ namespace KappAIO.Champions.Sion
                         HarassMenu.CreateSlider(i.Slot + "mana", i.Slot + " Mana Manager {0}%", 60);
                         HarassMenu.AddSeparator(0);
                         LaneClearMenu.CreateCheckBox(i.Slot, "Use " + i.Slot);
+                        LaneClearMenu.CreateSlider(i.Slot + "hit", i.Slot + " Hits {0}", 3, 1, 20);
                         LaneClearMenu.CreateSlider(i.Slot + "mana", i.Slot + " Mana Manager {0}%", 60);
                         LaneClearMenu.AddSeparator(0);
                         JungleClearMenu.CreateCheckBox(i.Slot, "Use " + i.Slot);
@@ -303,7 +304,7 @@ namespace KappAIO.Champions.Sion
                 return;
 
             var QRect = QRectangle(LastQPos);
-            var QHits = EntityManager.Enemies.Count(e => e.IsKillable() && QRect.IsInside(e.PrediectPosition(250 + Game.Ping)));
+            var QHits = EntityManager.Enemies.Count(e => e.IsKillable() && !e.WillDie(Q) && QRect.IsInside(e.PrediectPosition(250 + Game.Ping)));
 
             if (IsChargingQ)
             {
