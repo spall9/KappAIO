@@ -186,6 +186,11 @@ namespace KappAIO.Champions.Syndra
 
         public override void Active()
         {
+            if (R.Level == 3 && R.Range != 755)
+            {
+                R.Range = 755;
+            }
+
             if (AutoMenu.KeyBindValue("QEkey"))
             {
                 QE(Game.CursorPos);
